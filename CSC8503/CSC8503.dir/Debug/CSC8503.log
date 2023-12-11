@@ -1,0 +1,7 @@
+﻿  NetworkedGame.cpp
+D:\CppProject\CSC8503 2023\CSC8503\NetworkedGame.h(120,45): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503CoreClasses\NetworkObject.h(9,20): warning C4099: “NCL::CSC8503::FullPacket”: 类型名称以前使用“class”现在使用的是“struct”
+D:\CppProject\CSC8503 2023\CSC8503CoreClasses\NetworkObject.h(9,9): message : 参见“NCL::CSC8503::FullPacket”的声明
+D:\CppProject\CSC8503 2023\CSC8503CoreClasses\NetworkObject.h(19,21): warning C4099: “NCL::CSC8503::DeltaPacket”: 类型名称以前使用“class”现在使用的是“struct”
+D:\CppProject\CSC8503 2023\CSC8503CoreClasses\NetworkObject.h(19,9): message : 参见“NCL::CSC8503::DeltaPacket”的声明
+  CSC8503.vcxproj -> D:\CppProject\CSC8503 2023\x64\Debug\CSC8503.exe
