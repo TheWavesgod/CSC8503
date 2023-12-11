@@ -104,7 +104,7 @@ void NetworkedGame::UpdateGame(float dt) {
 		}
 		if (thisServer) { ServerUpdatePlayerList(); }
 
-		timeToNextPacket += 1.0f / 20.0f; //20hz server/client update
+		timeToNextPacket += 1.0f / 60.0f; //20hz server/client update
 	}
 
 	// Server and Client Receive and process there packet
@@ -200,11 +200,22 @@ void NetworkedGame::UpdateAsServer(float dt) {
 void NetworkedGame::UpdateAsClient(float dt) {
 	ClientPacket newPacket;
 
-	if (Window::GetKeyboard()->KeyPressed(KeyCodes::SPACE)) {
-		//fire button pressed!
-		//newPacket.buttonstates[0] = 1;
-		newPacket.lastID = 0; //You'll need to work this out somehow...
-	}
+	Vector3 PointerPos;
+	findOSpointerWorldPosition(PointerPos);
+	newPacket.PointerPos = PointerPos;
+	newPacket.btnStates[0] = Window::GetKeyboard()->KeyHeld(KeyCodes::W) ? 1 : 0;
+	newPacket.btnStates[1] = Window::GetKeyboard()->KeyHeld(KeyCodes::S) ? 1 : 0;
+	newPacket.btnStates[2] = Window::GetKeyboard()->KeyHeld(KeyCodes::D) ? 1 : 0;
+	newPacket.btnStates[3] = Window::GetKeyboard()->KeyHeld(KeyCodes::A) ? 1 : 0;
+	newPacket.btnStates[4] = Window::GetKeyboard()->KeyPressed(KeyCodes::SHIFT) ? 1 : 0;
+	newPacket.btnStates[5] = Window::GetMouse()->ButtonPressed(MouseButtons::Type::Left) ? 1 : 0;
+	newPacket.lastID = 0;
+
+	//if (Window::GetKeyboard()->KeyPressed(KeyCodes::SPACE)) {
+	//	//fire button pressed!
+	//	//newPacket.buttonstates[0] = 1;
+	//	newPacket.lastID = 0; //You'll need to work this out somehow...
+	//}
 	thisClient->SendPacket(newPacket);
 }
 
@@ -308,6 +319,12 @@ void NetworkedGame::UpdateMinimumState() {
 		}
 		o->UpdateStateHistory(minID); //clear out old states so they arent taking up memory...
 	}
+}
+
+bool NetworkedGame::serverProcessCP(ClientPacket* cp, int source)
+{
+
+	return true;
 }
 
 bool NetworkedGame::clientProcessFp(FullPacket* fp)
@@ -443,6 +460,7 @@ void NetworkedGame::ReceivePacket(int type, GamePacket* payload, int source) {
 	}
 	case BasicNetworkMessages::Received_State: {
 		ClientPacket* realPacket = (ClientPacket*)payload;
+		serverProcessCP(realPacket);
 		break;
 	}
 	}

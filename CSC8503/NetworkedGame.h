@@ -54,6 +54,7 @@ namespace NCL {
 			void ServerSendRoundState();
 			void UpdateMinimumState();
 
+			bool serverProcessCP(ClientPacket* cp, int source);
 			bool clientProcessFp(FullPacket* fp);
 			bool clinetProcessDp(DeltaPacket* dp);
 

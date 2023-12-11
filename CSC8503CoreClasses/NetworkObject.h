@@ -31,8 +31,7 @@ namespace NCL::CSC8503 {
 	struct ClientPacket : public GamePacket {
 		int		lastID;
 		Vector3 PointerPos;
-		char	btnHoldStates[4];
-		char	btnPressedStates[2];
+		char	btnStates[6];
 
 		ClientPacket() {
 			type = Received_State;
