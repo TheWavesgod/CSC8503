@@ -11,6 +11,7 @@ NetworkPlayer::NetworkPlayer(NetworkedGame* game, int num)	{
 
 	sprintTimer = SprintCDT;
 	fireTimer = FireCDT;
+	score = 0;
 }
 
 NetworkPlayer::~NetworkPlayer()	{

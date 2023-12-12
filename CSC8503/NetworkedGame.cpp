@@ -102,7 +102,10 @@ void NetworkedGame::UpdateGame(float dt) {
 				UpdateAsClient(dt);
 			}
 		}
-		if (thisServer) { ServerUpdatePlayerList(); }
+		if (thisServer) { 
+			ServerUpdatePlayerList(); 
+			ServerSendRoundState();
+		}
 
 		timeToNextPacket += 1.0f / 60.0f; //20hz server/client update
 	}
@@ -113,7 +116,9 @@ void NetworkedGame::UpdateGame(float dt) {
 
 	if (isRoundstart)
 	{
+		updateRoundTime(dt);
 		UpdateGamePlayerInput(dt);
+		UpdateScoreTable();
 
 		//Test View
 		if (Window::GetKeyboard()->KeyPressed(KeyCodes::Q))
@@ -173,6 +178,18 @@ int NetworkedGame::GetClientPlayerNum()
 	return -1;
 }
 
+int NetworkedGame::GetClientPlayerNum(int peerID)
+{
+	for (int i = 1; i < 4; ++i)
+	{
+		if (PlayersList[i] == peerID)
+		{
+			return i;
+		}
+	}
+	return -1;
+}
+
 void NetworkedGame::InitWorld()
 {
 	world->ClearAndErase();
@@ -195,6 +212,7 @@ void NetworkedGame::UpdateAsServer(float dt) {
 	else {
 		BroadcastSnapshot(true);
 	}
+	UpdateMinimumState();
 }
 
 void NetworkedGame::UpdateAsClient(float dt) {
@@ -209,7 +227,7 @@ void NetworkedGame::UpdateAsClient(float dt) {
 	newPacket.btnStates[3] = Window::GetKeyboard()->KeyHeld(KeyCodes::A) ? 1 : 0;
 	newPacket.btnStates[4] = Window::GetKeyboard()->KeyPressed(KeyCodes::SHIFT) ? 1 : 0;
 	newPacket.btnStates[5] = Window::GetMouse()->ButtonPressed(MouseButtons::Type::Left) ? 1 : 0;
-	newPacket.lastID = 0;
+	newPacket.lastID = GlobalStateID;
 
 	//if (Window::GetKeyboard()->KeyPressed(KeyCodes::SPACE)) {
 	//	//fire button pressed!
@@ -254,14 +272,41 @@ void NetworkedGame::UpdateGamePlayerInput(float dt)
 			findOSpointerWorldPosition(PointerPos);
 			realPlayer->SetPlayerYaw(PointerPos);
 			bool btnVal[4] = { false, false, false ,false };
-			if (Window::GetKeyboard()->KeyHeld(KeyCodes::W)) { btnVal[0] = true; }
-			if (Window::GetKeyboard()->KeyHeld(KeyCodes::S)) { btnVal[1] = true; }
-			if (Window::GetKeyboard()->KeyHeld(KeyCodes::D)) { btnVal[2] = true; }
-			if (Window::GetKeyboard()->KeyHeld(KeyCodes::A)) { btnVal[3] = true; }
-			realPlayer->MovePlayer(btnVal[0], btnVal[1], btnVal[2], btnVal[3]);
+			if (Window::GetKeyboard()->KeyHeld(KeyCodes::W)) { btnVal[Up] = true; }
+			if (Window::GetKeyboard()->KeyHeld(KeyCodes::S)) { btnVal[Down] = true; }
+			if (Window::GetKeyboard()->KeyHeld(KeyCodes::D)) { btnVal[Right] = true; }
+			if (Window::GetKeyboard()->KeyHeld(KeyCodes::A)) { btnVal[Left] = true; }
+			realPlayer->MovePlayer(btnVal[Up], btnVal[Down], btnVal[Right], btnVal[Left]);
 			if (Window::GetKeyboard()->KeyPressed(KeyCodes::SHIFT)) { realPlayer->PlayerSprint(); }
 			if (Window::GetMouse()->ButtonPressed(MouseButtons::Type::Left)) { realPlayer->PlayerFire(); }
 			realPlayer->GameTick(dt);
+		}
+		for (int i = 1; i < 4; ++i)
+		{
+			if (serverPlayers[i] != nullptr)
+			{
+				NetworkPlayer* thePlayer = (NetworkPlayer*)(serverPlayers[i]);
+				bool btnVal[4] = { false, false, false ,false };
+				if (thePlayer->GetBtnState(Up) == 1) { btnVal[Up] = true; }
+				if (thePlayer->GetBtnState(Down) == 1) { btnVal[Down] = true; }
+				if (thePlayer->GetBtnState(Right) == 1) { btnVal[Right] = true; }
+				if (thePlayer->GetBtnState(Left) == 1) { btnVal[Left] = true; }
+				thePlayer->MovePlayer(btnVal[Up], btnVal[Down], btnVal[Right], btnVal[Left]);
+				thePlayer->GameTick(dt);
+			}
+		}
+	}
+}
+
+void NetworkedGame::UpdateScoreTable()
+{
+	if (!isServer()) { return; }
+	for (int i = 0; i < 4; ++i)
+	{
+		if (serverPlayers[i] != nullptr)
+		{
+			NetworkPlayer* thisPlayer = (NetworkPlayer*)(serverPlayers[i]);
+			scoreTable[i] = thisPlayer->getPlayerScore();
 		}
 	}
 }
@@ -293,8 +338,19 @@ void NetworkedGame::BroadcastSnapshot(bool deltaFrame) {
 
 void NetworkedGame::ServerSendRoundState()
 {
-	RoundStatePacket state(isRoundstart);
+	RoundStatePacket state;
+	state.isRoundStart = this->isRoundstart;
+	if (isRoundstart)
+	{
+		for (int i = 0; i < 4; ++i) { state.scoretable[i] = scoreTable[i]; }
+	}
 	thisServer->SendGlobalPacket(state);
+}
+
+void NetworkedGame::updateRoundTime(float dt)
+{
+	RoundTime -= dt;
+
 }
 
 void NetworkedGame::UpdateMinimumState() {
@@ -323,7 +379,42 @@ void NetworkedGame::UpdateMinimumState() {
 
 bool NetworkedGame::serverProcessCP(ClientPacket* cp, int source)
 {
+	int playerID = GetClientPlayerNum(source);
+	if (playerID != -1)
+	{
+		NetworkPlayer* thePlayer = (NetworkPlayer*)(serverPlayers[playerID]);
+		thePlayer->SetPlayerYaw(cp->PointerPos);
+		if (cp->btnStates[Sprint] == 1) { thePlayer->PlayerSprint(); }
+		if (cp->btnStates[Fire] == 1)   { thePlayer->PlayerFire(); }
+		thePlayer->SetBtnState(Up, cp->btnStates[Up]);
+		thePlayer->SetBtnState(Down, cp->btnStates[Down]);
+		thePlayer->SetBtnState(Right, cp->btnStates[Right]);
+		thePlayer->SetBtnState(Left, cp->btnStates[Left]);
 
+		auto i = stateIDs.find(playerID);
+		if (i == stateIDs.end()) { stateIDs.insert(std::pair<int, int>(playerID, cp->lastID)); }
+		else { i->second = cp->lastID; }
+		return true;
+	}
+	return false;
+}
+
+bool NetworkedGame::clinetProcessRp(RoundStatePacket* rp)
+{
+	if (rp->isRoundStart != isRoundStart())
+	{
+		switch (rp->isRoundStart)
+		{
+		case true:
+			this->StartLevel();
+			break;
+		case false:
+			break;
+		}
+	}
+	if (rp->isRoundStart) {
+		for (int i = 0; i < 4; ++i) { scoreTable[i] = rp->scoretable[i]; }
+	}
 	return true;
 }
 
@@ -335,6 +426,7 @@ bool NetworkedGame::clientProcessFp(FullPacket* fp)
 		return false;
 	}
 	itr->second->ReadPacket(*fp);
+	if (fp->fullState.stateID > GlobalStateID) { GlobalStateID = fp->fullState.stateID; }
 	return true;
 }
 
@@ -411,7 +503,7 @@ void NetworkedGame::SpawnPlayer() {
 	{
 		if (GetPlayerPeerID(i) != -1)
 		{
-			serverPlayers.push_back(AddNetPlayerToWorld(Vector3(), i)); // got problem here
+			serverPlayers.push_back(AddNetPlayerToWorld(Vector3(), i)); 
 		}
 		else
 		{
@@ -431,8 +523,15 @@ void NetworkedGame::SpawnPlayer() {
 
 void NetworkedGame::StartLevel() {
 	InitWorld();
-
+	InitMapWall();
 	physics->UseGravity(true);
+
+	scoreTable.clear();
+	for (int i = 0; i < 4; ++i) { scoreTable.push_back(0); }
+	//Change Round State
+	GlobalStateID = -1;
+	RoundTime = 600.0f;
+	isRoundstart = true;
 }
 
 void NetworkedGame::ReceivePacket(int type, GamePacket* payload, int source) {
@@ -445,7 +544,7 @@ void NetworkedGame::ReceivePacket(int type, GamePacket* payload, int source) {
 	}
 	case BasicNetworkMessages::Round_State: {
 		RoundStatePacket* realPacket = (RoundStatePacket*)payload;
-		isRoundstart = realPacket->isRoundStart;
+		clinetProcessRp(realPacket);
 		break;
 	}
 	case BasicNetworkMessages::Full_State: {
@@ -460,7 +559,7 @@ void NetworkedGame::ReceivePacket(int type, GamePacket* payload, int source) {
 	}
 	case BasicNetworkMessages::Received_State: {
 		ClientPacket* realPacket = (ClientPacket*)payload;
-		serverProcessCP(realPacket);
+		serverProcessCP(realPacket, source);
 		break;
 	}
 	}
@@ -479,11 +578,78 @@ void NetworkedGame::OnPlayerCollision(NetworkPlayer* a, NetworkPlayer* b) {
 	}
 }
 
-void NetworkedGame::ChangeRoundState(bool val)
+std::string NetworkedGame::getRoundTimeToString()
 {
-	if (thisServer)
-	{
-		isRoundstart = val;
-		ServerSendRoundState();
-	}
+	int minute = (int)RoundTime / 60;
+	int second = (int)RoundTime % 60;
+	std::string m = std::to_string(minute);
+	std::string s = std::to_string(second);
+	if (minute < 10) { m = "0" + m; }
+	if (second < 10) { s = "0" + s; }
+	std::string time = "Round Time " + m + ":" + s;
+	return time;
 }
+
+std::string NetworkedGame::getLocalPLayerScoreToString()
+{
+	if (localPlayer)
+	{
+		NetworkPlayer* p = (NetworkPlayer*)localPlayer;
+		int score = p->getPlayerScore();
+		std::string s = std::to_string(score);
+		if (score < 100) { s = " " + s; }
+		if (score < 10)  { s = " " + s; }
+		s = "YourScore: " + s;
+		return s;
+	}
+	return std::string();
+}
+
+std::string NetworkedGame::getLocalPlayerSprintCDToString()
+{
+	if (localPlayer)
+	{
+		NetworkPlayer* p = (NetworkPlayer*)localPlayer;
+		float cd = p->getSprintCD();
+		int t = (int)cd + 1;
+		std::string sct;
+		if (cd > 0) { sct = std::to_string(t) + "s"; }
+		else if (cd == 0) { sct = "Ready"; }
+		sct = "Sprint:" + sct;
+		return sct;
+	}
+	return std::string();
+}
+
+std::string NetworkedGame::getLocalPlayerFireCDToString()
+{
+	if (localPlayer)
+	{
+		NetworkPlayer* p = (NetworkPlayer*)localPlayer;
+		float cd = p->getFireCD();
+		int t = (int)cd + 1;
+		std::string fct;
+		if (cd > 0) { fct = std::to_string(t) + "s"; }
+		else if (cd == 0) { fct = "Ready"; }
+		fct = "Fire:" + fct;
+		return fct;
+	}
+	return std::string();
+}
+
+std::string NetworkedGame::getPlayersScore(int ID)
+{
+	if (PlayersList[ID] != -1)
+	{
+		int score = scoreTable[ID];
+		std::string s = std::to_string(score);
+		if (score < 100) { s = " " + s; }
+		if (score < 10) { s = " " + s; }
+		std::string blank = "    ";
+		s = "Player " + std::to_string(ID + 1) + blank + "Score:" + s + blank +"ping : 1";
+		return s;
+	}
+	return std::string();
+}
+
+

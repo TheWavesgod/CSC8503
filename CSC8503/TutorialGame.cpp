@@ -310,7 +310,8 @@ GameObject* TutorialGame::AddFloorToWorld(const Vector3& position) {
 	GameObject* floor = new GameObject();
 
 	Vector3 floorSize = Vector3(200, 2, 200);
-	AABBVolume* volume = new AABBVolume(floorSize);
+	//AABBVolume* volume = new AABBVolume(floorSize);
+	AABBVolume* volume = new AABBVolume(Vector3(400, 2, 400));
 	floor->SetBoundingVolume((CollisionVolume*)volume);
 	floor->GetTransform()
 		.SetScale(floorSize * 2)
@@ -325,6 +326,29 @@ GameObject* TutorialGame::AddFloorToWorld(const Vector3& position) {
 	world->AddGameObject(floor);
 
 	return floor;
+}
+
+GameObject* TutorialGame::AddWallToWorld(const Vector3& position, const Vector3& halfsize)
+{
+	GameObject* wall = new GameObject();
+
+	AABBVolume* volume = new AABBVolume(halfsize);
+	wall->SetBoundingVolume((CollisionVolume*)volume);
+	wall->GetTransform()
+		.SetScale(halfsize * 2)
+		.SetPosition(position);
+
+	wall->SetRenderObject(new RenderObject(&wall->GetTransform(), cubeMesh, basicTex, basicShader));
+	wall->SetPhysicsObject(new PhysicsObject(&wall->GetTransform(), wall->GetBoundingVolume()));
+
+	wall->GetPhysicsObject()->SetInverseMass(0);
+	wall->GetPhysicsObject()->InitCubeInertia();
+	
+	wall->GetRenderObject()->SetColour(Debug::BLACK);
+
+	world->AddGameObject(wall);
+
+	return wall;
 }
 
 /*
@@ -466,7 +490,15 @@ StateGameObject* TutorialGame::AddStateObjectToWorld(const Vector3& position)
 }
 
 void TutorialGame::InitDefaultFloor() {
-	AddFloorToWorld(Vector3(0, -20, 0));
+	AddFloorToWorld(Vector3(0, -2, 0));
+}
+
+void TutorialGame::InitMapWall()
+{
+	AddWallToWorld(Vector3(0, 0, -201), Vector3(200, 5, 2));
+	AddWallToWorld(Vector3(0, 0,  201), Vector3(200, 5, 2));
+	AddWallToWorld(Vector3( 201, 0, 0), Vector3(2, 5, 200));
+	AddWallToWorld(Vector3(-201, 0, 0), Vector3(2, 5, 200));
 }
 
 void TutorialGame::InitGameExamples() {
