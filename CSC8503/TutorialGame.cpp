@@ -8,7 +8,8 @@
 #include "OrientationConstraint.h"
 #include "StateGameObject.h"
 
-
+#include "Assets.h"
+#include <fstream>
 
 using namespace NCL;
 using namespace CSC8503;
@@ -53,6 +54,8 @@ void TutorialGame::InitialiseAssets() {
 	sphereMesh	= renderer->LoadMesh("sphere.msh");
 	charMesh	= renderer->LoadMesh("goat.msh");
 	enemyMesh	= renderer->LoadMesh("Keeper.msh");
+	gooseMesh   = renderer->LoadMesh("goose.msh");
+	coinMesh    = renderer->LoadMesh("coin.msh");
 	bonusMesh	= renderer->LoadMesh("apple.msh");
 	capsuleMesh = renderer->LoadMesh("capsule.msh"); 
 
@@ -499,6 +502,13 @@ void TutorialGame::InitMapWall()
 	AddWallToWorld(Vector3(0, 0,  201), Vector3(200, 5, 2));
 	AddWallToWorld(Vector3( 201, 0, 0), Vector3(2, 5, 200));
 	AddWallToWorld(Vector3(-201, 0, 0), Vector3(2, 5, 200));
+
+	Map* newMap = new Map("Map.txt", Vector2(200, 200), 6);
+	for (const auto &i : newMap->wallList)
+	{
+		AddWallToWorld(i.pos, i.halfsize);
+	}
+	delete newMap;
 }
 
 void TutorialGame::InitGameExamples() {
@@ -632,4 +642,81 @@ void TutorialGame::MoveSelectedObject() {
 	}
 }
 
+Map::Map(const std::string& filename, Vector2 halfMapSize, int wHeight)
+{
+	std::ifstream infile(Assets::DATADIR + filename);
 
+	infile >> nodeSize;
+	infile >> gridWidth;
+	infile >> gridHeight;
+	nodes.clear();
+	for (int i = 0; i < gridWidth * gridHeight; ++i)
+	{
+		char node;
+		infile >> node;
+		nodes.push_back(node);
+	}
+
+	Vector3 TopLeftPoint = Vector3(-halfMapSize.x, 0, -halfMapSize.y);
+	int hns = nodeSize / 2;
+	int hwh = wHeight / 2;
+
+	for (int y = 0; y < gridHeight; ++y)
+	{
+		int num = 0;
+		for (int x = 0; x < gridWidth; ++x)
+		{
+			if (nodes[y * gridWidth + x] == 'x')
+			{
+				++num;
+			}
+			else if (nodes[y * gridWidth + x] == '.')
+			{
+				if (num > 1)
+				{
+					Wall w;
+					w.pos = TopLeftPoint + Vector3(x * nodeSize - num * hns, hwh, y * nodeSize + hns);
+					w.halfsize = Vector3(num * hns, hwh, hns);
+					wallList.push_back(w);
+				}
+				num = 0;
+			}
+		}
+		if (num > 1)
+		{
+			Wall w;
+			w.pos = TopLeftPoint + Vector3(gridWidth * nodeSize - num * hns, hwh, y * nodeSize + hns);
+			w.halfsize = Vector3(num * hns, hwh, hns);
+			wallList.push_back(w);
+		}
+	}
+	for (int y = 0; y < gridWidth; ++y)
+	{
+		int num = 0;
+		for (int x = 0; x < gridHeight; ++x)
+		{
+			if (nodes[y + x * gridWidth] == 'x')
+			{
+				++num;
+			}
+			else if (nodes[y + x * gridWidth] == '.')
+			{
+				if (num > 1)
+				{
+					Wall w;
+					w.pos = TopLeftPoint + Vector3(y * nodeSize + hns, hwh,  x * nodeSize - num * hns);
+					w.halfsize = Vector3(hns, hwh, num * hns);
+					wallList.push_back(w);
+				}
+				num = 0;
+			}
+		}
+		if (num > 1)
+		{
+			Wall w;
+			w.pos = TopLeftPoint + Vector3(y * nodeSize + hns, hwh, gridHeight * nodeSize - num * hns);
+			w.halfsize = Vector3(hns, hwh, num * hns);
+			wallList.push_back(w);
+		}
+	}
+}

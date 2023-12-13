@@ -118,7 +118,9 @@ void NetworkPlayer::PlayerFire()
 	if (fireTimer <= 0)
 	{
 		Vector3 fireDir = getPlayerForwardVector();
-		Debug::DrawLine(transform.GetPosition(), transform.GetPosition() + fireDir * 20.0f, Debug::CYAN, 3.0f);
+		Vector3 firePos = transform.GetPosition() + fireDir * 10 + Vector3(0, 2, 0);
+		game->SpawnBullet(this, firePos, fireDir);
+		//Debug::DrawLine(transform.GetPosition(), transform.GetPosition() + fireDir * 20.0f, Debug::CYAN, 3.0f);
 		fireTimer = FireCDT;
 	}
 }
@@ -139,3 +141,4 @@ void NetworkPlayer::UpdateTimer(float dt)
 	if (sprintTimer < 0) { sprintTimer = 0; }
 	if (fireTimer < 0) { fireTimer = 0; }
 }
+

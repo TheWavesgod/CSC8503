@@ -4,6 +4,9 @@
     <ClCompile Include="D:\CppProject\CSC8503 2023\CSC8503\CMakeFiles\CSC8503.dir\cmake_pch.cxx">
       <Filter>Source Files</Filter>
     </ClCompile>
+    <ClCompile Include="D:\CppProject\CSC8503 2023\CSC8503\Bullet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
     <ClCompile Include="D:\CppProject\CSC8503 2023\CSC8503\GameTechRenderer.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -24,6 +27,9 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
+    <ClInclude Include="D:\CppProject\CSC8503 2023\CSC8503\Bullet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
     <ClInclude Include="D:\CppProject\CSC8503 2023\CSC8503\GameTechRenderer.h">
       <Filter>Header Files</Filter>
     </ClInclude>

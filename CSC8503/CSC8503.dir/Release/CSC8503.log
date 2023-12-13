@@ -1,0 +1,20 @@
+﻿  NetworkedGame.cpp
+D:\CppProject\CSC8503 2023\CSC8503\NetworkedGame.h(194,45): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503CoreClasses\NetworkObject.h(9,20): warning C4099: “NCL::CSC8503::FullPacket”: 类型名称以前使用“class”现在使用的是“struct”
+D:\CppProject\CSC8503 2023\CSC8503CoreClasses\NetworkObject.h(9,9): message : 参见“NCL::CSC8503::FullPacket”的声明
+D:\CppProject\CSC8503 2023\CSC8503CoreClasses\NetworkObject.h(19,21): warning C4099: “NCL::CSC8503::DeltaPacket”: 类型名称以前使用“class”现在使用的是“struct”
+D:\CppProject\CSC8503 2023\CSC8503CoreClasses\NetworkObject.h(19,9): message : 参见“NCL::CSC8503::DeltaPacket”的声明
+D:\CppProject\CSC8503 2023\CSC8503CoreClasses\NetworkObject.h(31,22): warning C4099: “NCL::CSC8503::ClientPacket”: 类型名称以前使用“class”现在使用的是“struct”
+D:\CppProject\CSC8503 2023\CSC8503CoreClasses\NetworkObject.h(31,9): message : 参见“NCL::CSC8503::ClientPacket”的声明
+D:\CppProject\CSC8503 2023\CSC8503CoreClasses\NetworkObject.h(65,26): warning C4099: “NCL::CSC8503::RoundStatePacket”: 类型名称以前使用“class”现在使用的是“struct”
+D:\CppProject\CSC8503 2023\CSC8503CoreClasses\NetworkObject.h(65,9): message : 参见“NCL::CSC8503::RoundStatePacket”的声明
+D:\CppProject\CSC8503 2023\CSC8503CoreClasses\NetworkObject.h(76,27): warning C4099: “NCL::CSC8503::PlayerStatePacket”: 类型名称以前使用“class”现在使用的是“struct”
+D:\CppProject\CSC8503 2023\CSC8503CoreClasses\NetworkObject.h(76,9): message : 参见“NCL::CSC8503::PlayerStatePacket”的声明
+D:\CppProject\CSC8503 2023\CSC8503\Bullet.h(12,51): warning C4305: “初始化”: 从“double”到“const float”截断
+D:\CppProject\CSC8503 2023\CSC8503\NetworkedGame.cpp(497,45): warning C4305: “参数”: 从“double”到“float”截断
+  正在生成代码
+  Previous IPDB and IOBJ mismatch, fall back to full compilation.
+D:\CppProject\CSC8503 2023\CSC8503\Main.cpp(500): warning C4715: “Coursework”: 不是所有的控件路径都返回值
+  All 3786 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  已完成代码的生成
+  CSC8503.vcxproj -> D:\CppProject\CSC8503 2023\x64\Release\CSC8503.exe

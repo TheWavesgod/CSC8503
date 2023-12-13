@@ -15,6 +15,8 @@ enum BasicNetworkMessages {
 	Player_Connected,
 	Player_Disconnected,
 	Round_State,
+	Player_State,
+	bullet_state,
 	Shutdown
 };
 

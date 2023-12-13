@@ -6,6 +6,11 @@ namespace NCL {
 	namespace CSC8503 {
 		class NetworkedGame;
 
+		enum ScoreType {
+			bulletHitAI  = 3,
+			bulletHitPlayer = 5
+		};
+
 		class NetworkPlayer : public GameObject {
 		public:
 			static constexpr float SprintCDT = 4.0f;
@@ -33,9 +38,15 @@ namespace NCL {
 			Vector3 getPlayerForwardVector();
 
 			float getSprintCD() const { return sprintTimer < 0 ? 0 : sprintTimer; }
+			void setSprintCD(float st) { sprintTimer = st; }
 			float getFireCD() const { return fireTimer < 0 ? 0 : fireTimer; }
+			void setFireCD(float ft) { fireTimer = ft; }
 
 			int getPlayerScore() const { return score; }
+			void setPlayerSocer(int score) { this->score = score; }
+			void addPlayerScore(int increaseNum) { score += increaseNum; }
+
+			NetworkedGame* getGame() { return game; }
 
 		protected:
 			void UpdateTimer(float dt);

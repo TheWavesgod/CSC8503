@@ -73,6 +73,29 @@ namespace NCL::CSC8503 {
 		}
 	};
 
+	struct PlayerStatePacket : public GamePacket
+	{
+		char playerNum;
+		char state[4] = { 0,0,0,0 };
+		
+		PlayerStatePacket()
+		{
+			type = Player_State;
+			size = sizeof(PlayerStatePacket);
+		}
+	};
+
+	struct BulletStatePacket : public GamePacket
+	{
+		char bulletInfo[2];
+		int bulletID;
+		BulletStatePacket()
+		{
+			type = bullet_state;
+			size = sizeof(BulletStatePacket);
+		}
+	};
+
 	class NetworkObject		{
 	public:
 		NetworkObject(GameObject& o, int id);
@@ -86,6 +109,8 @@ namespace NCL::CSC8503 {
 		void UpdateStateHistory(int minID);
 		NetworkState& GetLatestNetworkState();
 
+		int getNetWorkID()const { return networkID; }
+		GameObject* getGameObjectPtr() const { return &object; }
 	protected:
 
 		bool GetNetworkState(int frameID, NetworkState& state);

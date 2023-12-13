@@ -4,6 +4,7 @@ set(PROJECT_NAME CSC8503)
 # Source groups
 ################################################################################
 set(Header_Files
+    "Bullet.h"
     "GameTechRenderer.h"
     "NetworkedGame.h"
     "NetworkPlayer.h"
@@ -13,6 +14,7 @@ set(Header_Files
 source_group("Header Files" FILES ${Header_Files})
 
 set(Source_Files
+    "Bullet.cpp"
     "GameTechRenderer.cpp"
     "Main.cpp"
     "NetworkedGame.cpp"

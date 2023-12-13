@@ -13,6 +13,8 @@ namespace NCL {
 		class FullPacket;
 		class ClientPacket;
 		class RoundStatePacket;
+		class PlayerStatePacket;
+		class BulletStatePacket;
 
 		enum PlayInputBtns {
 			Up,
@@ -34,8 +36,14 @@ namespace NCL {
 			void UpdateGame(float dt) override;
 
 			void SpawnPlayer();
+			void SpawnBullet(NetworkPlayer* o, Vector3 firePos, Vector3 fireDir);
+			void SeverSendBulletDelPckt(int bulletID);
+			void ClientSpawnBullet(int playNum, int bulletID);
+
+			void RemoveObjectFromWorld(GameObject* o, bool andDelete);
 
 			void StartLevel();
+			void LevelOver();
 
 			void ReceivePacket(int type, GamePacket* payload, int source) override;
 
@@ -48,6 +56,8 @@ namespace NCL {
 			std::string getLocalPlayerSprintCDToString();
 			std::string getLocalPlayerFireCDToString();
 			std::string getPlayersScore(int ID);
+			std::string getSelfPlace();
+			void PrintPlayerFinalScore(int place, Vector2 pos);
 
 			bool isGameOver() { return isGameover; }
 
@@ -70,14 +80,17 @@ namespace NCL {
 
 			void BroadcastSnapshot(bool deltaFrame);
 			void ServerSendRoundState();
+			void ServerSendPlayerState();
 			void updateRoundTime(float dt);
 
 			void UpdateMinimumState();
 
 			bool serverProcessCP(ClientPacket* cp, int source);
-			bool clinetProcessRp(RoundStatePacket* rp);
+			bool clientProcessRp(RoundStatePacket* rp);
 			bool clientProcessFp(FullPacket* fp);
-			bool clinetProcessDp(DeltaPacket* dp);
+			bool clientProcessDp(DeltaPacket* dp);
+			bool clientProcessPp(PlayerStatePacket* Pp);
+			bool clientProcessBp(BulletStatePacket* Bp);
 
 			void findOSpointerWorldPosition(Vector3& position);
 
@@ -109,54 +122,82 @@ namespace NCL {
 		{
 			PushdownResult OnUpdate(float dt, PushdownState** newState) override
 			{
-				startDisplayTime -= dt;
-				if (startDisplayTime > 0) { Debug::Print("Round Start!", Vector2(38, 35), Debug::RED); }
 				if (game)
 				{
 					NetworkedGame* thisGame = (NetworkedGame*)game;
-					Debug::Print(thisGame->getRoundTimeToString(), Vector2(34, 10), Debug::YELLOW);
-					Debug::Print(thisGame->getLocalPLayerScoreToString(), Vector2(70, 10), Debug::YELLOW);
-					Debug::Print(thisGame->getLocalPlayerSprintCDToString(), Vector2(12, 80), Debug::YELLOW);
-					Debug::Print(thisGame->getLocalPlayerFireCDToString(), Vector2(70, 80), Debug::YELLOW);
+					if (thisGame->isRoundStart()) { return RoundOnGoing(dt, thisGame); }
+					else { return RoundOver(dt, newState, thisGame); }
+				}
+			}
 
-					if (Window::GetKeyboard()->KeyHeld(KeyCodes::TAB))
+		protected:
+			PushdownResult RoundOver(float dt, PushdownState** newState, NetworkedGame* thisGame)
+			{
+				overDisplayTime -= dt;
+				if (overDisplayTime > 0) { Debug::Print("Round Over!", Vector2(38, 35), Debug::RED); }
+				else
+				{
+					Debug::Print(thisGame->getSelfPlace(), Vector2(15, 20), Debug::RED);
+					Debug::Print("====================================", Vector2(15, 30), Debug::YELLOW);
+					for (int i = 1; i < 5; ++i)
 					{
-						Debug::Print("====================================", Vector2(15, 20), Debug::YELLOW);
-						Debug::Print(thisGame->getPlayersScore(0), Vector2(18, 30), Debug::RED);
-						Debug::Print(thisGame->getPlayersScore(1), Vector2(18, 40), Debug::BLUE);
-						Debug::Print(thisGame->getPlayersScore(2), Vector2(18, 50), Debug::YELLOW);
-						Debug::Print(thisGame->getPlayersScore(3), Vector2(18, 60), Debug::CYAN);
-						Debug::Print("====================================", Vector2(15, 70), Debug::YELLOW);
+						thisGame->PrintPlayerFinalScore(i, Vector2(18, 30 + i * 10));
 					}
-					else {
-						Debug::Print("Hold TAB to show score table", Vector2(25, 95), Debug::YELLOW);
-					}
+					Debug::Print("====================================", Vector2(15, 80), Debug::YELLOW);
+					Debug::Print("Press Esc : Return to Multiplayer Lobby", Vector2(12, 90), Debug::YELLOW);
+					if (Window::GetKeyboard()->KeyPressed(KeyCodes::ESCAPE)) { return PushdownResult::Pop; }
+				}
+				return PushdownResult::NoChange;
+			}
 
-					if (thisGame->isServer())
+			PushdownResult RoundOnGoing(float dt, NetworkedGame* thisGame)
+			{
+				startDisplayTime -= dt;
+				if (startDisplayTime > 0) { Debug::Print("Round Start!", Vector2(38, 35), Debug::RED); }
+
+				Debug::Print(thisGame->getRoundTimeToString(), Vector2(34, 10), Debug::YELLOW);
+				Debug::Print(thisGame->getLocalPLayerScoreToString(), Vector2(70, 10), Debug::YELLOW);
+				Debug::Print(thisGame->getLocalPlayerSprintCDToString(), Vector2(12, 80), Debug::YELLOW);
+				Debug::Print(thisGame->getLocalPlayerFireCDToString(), Vector2(70, 80), Debug::YELLOW);
+
+				if (Window::GetKeyboard()->KeyHeld(KeyCodes::TAB))
+				{
+					Debug::Print("====================================", Vector2(15, 20), Debug::YELLOW);
+					Debug::Print(thisGame->getPlayersScore(0), Vector2(18, 30), Debug::RED);
+					Debug::Print(thisGame->getPlayersScore(1), Vector2(18, 40), Debug::BLUE);
+					Debug::Print(thisGame->getPlayersScore(2), Vector2(18, 50), Debug::YELLOW);
+					Debug::Print(thisGame->getPlayersScore(3), Vector2(18, 60), Debug::CYAN);
+					Debug::Print("====================================", Vector2(15, 70), Debug::YELLOW);
+				}
+				else {
+					Debug::Print("Hold TAB to show score table", Vector2(25, 95), Debug::YELLOW);
+				}
+
+				if (thisGame->isServer())
+				{
+					Debug::Print("You:Player 1", Vector2(5, 10), Debug::RED);
+					if (Window::GetKeyboard()->KeyPressed(KeyCodes::ESCAPE)) { thisGame->LevelOver(); }
+				}
+				if (thisGame->isClient())
+				{
+					switch (thisGame->GetClientPlayerNum())
 					{
-						Debug::Print("You:Player 1", Vector2(5, 10), Debug::RED);
-					}
-					if (thisGame->isClient())
-					{
-						switch (thisGame->GetClientPlayerNum())
-						{
-						case 1:
-							Debug::Print("You:Player 2", Vector2(5, 10), Debug::BLUE);
-							break;
-						case 2:
-							Debug::Print("You:Player 3", Vector2(5, 10), Debug::YELLOW);
-							break;
-						case 3:
-							Debug::Print("You:Player 4", Vector2(5, 10), Debug::CYAN);
-							break;
-						}
+					case 1:
+						Debug::Print("You:Player 2", Vector2(5, 10), Debug::BLUE);
+						break;
+					case 2:
+						Debug::Print("You:Player 3", Vector2(5, 10), Debug::YELLOW);
+						break;
+					case 3:
+						Debug::Print("You:Player 4", Vector2(5, 10), Debug::CYAN);
+						break;
 					}
 				}
 				return PushdownResult::NoChange;
 			}
 
-		protected:
 			float startDisplayTime = 1.2f;
+			float overDisplayTime = 1.2f;
 		};
 
 		class MultiplayerLobby : public PushdownState

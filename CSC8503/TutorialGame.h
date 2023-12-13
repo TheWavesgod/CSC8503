@@ -11,6 +11,23 @@
 
 namespace NCL {
 	namespace CSC8503 {
+		struct Wall {
+			Vector3 pos;
+			Vector3 halfsize;
+		};
+
+		class Map {
+		public:
+			Map(const std::string& filename, Vector2 halfMapSize, int wallHeight);
+
+			vector<Wall> wallList;
+		protected:
+			int nodeSize = 0;
+			int gridWidth = 0;
+			int gridHeight = 0;
+			vector<char> nodes;
+		};
+
 		class TutorialGame		{
 		public:
 			TutorialGame();
@@ -86,10 +103,12 @@ namespace NCL {
 			Mesh*	charMesh	= nullptr;
 			Mesh*	enemyMesh	= nullptr;
 			Mesh*	bonusMesh	= nullptr;
+			Mesh*   gooseMesh   = nullptr;
+			Mesh*   coinMesh    = nullptr;
 
 			//Coursework Additional functionality	
 			GameObject* lockedObject	= nullptr;
-			Vector3 lockedOffset		= Vector3(0, 80, 20);
+			Vector3 lockedOffset		= Vector3(0, 100, 20);
 			void LockCameraToObject(GameObject* o) {
 				lockedObject = o;
 			}

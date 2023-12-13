@@ -165,8 +165,8 @@ void PhysicsSystem::UpdateCollisionList() {
 		in.framesLeft--;
 
 		if ((*i).framesLeft < 0) {
-			i->a->OnCollisionEnd(i->b);
-			i->b->OnCollisionEnd(i->a);
+			if (i->a != nullptr) { i->a->OnCollisionEnd(i->b); }
+			if (i->b != nullptr) { i->b->OnCollisionEnd(i->a); }
 			i = allCollisions.erase(i);
 		}
 		else {

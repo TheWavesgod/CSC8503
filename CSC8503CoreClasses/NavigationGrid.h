@@ -1,4 +1,4 @@
-	#pragma once
+#pragma once
 #include "NavigationMap.h"
 #include <string>
 namespace NCL {
