@@ -27,6 +27,15 @@ using namespace CSC8503;
 //	return goose;
 //}
 
+Vector3 patrolPoints[4] = {
+	Vector3(-108, 0,-108),
+	Vector3( 108, 0,-108),
+	Vector3( 108, 0, 108),
+	Vector3(-108, 0, 108)
+};
+float waitT = 0.5f;
+
+
 NetworkPlayer::NetworkPlayer(NetworkedGame* game, int num)	{
 	this->game = game;
 	playerNum  = num;
@@ -52,12 +61,65 @@ NetworkPlayer::NetworkPlayer(NetworkedGame* game, int num, int AIKind)
 		State* patrol = new State(
 			[&](float dt)->void
 			{
-				Vector3 center = Vector3(4, 0, -4);
-				this->AIMoveTo(center, dt);
+				//Debug::DrawLine(patrolPoints[patrolIndex], patrolPoints[patrolIndex] + Vector3(0, 50, 0), Debug::GREEN);
+				if (this->AIMoveTo(patrolPoints[patrolIndex], dt)) 
+				{
+					waitT -= dt;
+					if (waitT < 0.0f)
+					{
+						++patrolIndex;
+						patrolIndex = patrolIndex % 4;
+						waitT = 0.5f;
+						//std::cout << "patrolIndex = " << patrolIndex << std::endl;
+					}
+				}
+				this->UpdateVisualList(dt);
+			}
+		);
+
+		State* chasePlayer = new State(
+			[&](float dt)->void
+			{
+				this->UpdateVisualList(dt);
+				NetworkPlayer* target = this->getVisualTarget();
+				if (target != nullptr)
+				{
+					Vector3 pos = target->GetTransform().GetPosition();
+					AIMoveTo(pos, dt);
+				}
+			}
+		);
+
+		StateTransition* patrolToChase = new StateTransition(patrol, chasePlayer,
+			[&](void)->bool
+			{
+				if (this->getVisualTarget() != nullptr)
+				{
+					return true;
+				}
+				else {
+					return false;
+				}
+			}
+		);
+
+		StateTransition* chaseToPatrol = new StateTransition(chasePlayer, patrol,
+			[&](void)->bool
+			{
+				if (this->getVisualTarget() == nullptr)
+				{
+					return true;
+				}
+				else {
+					return false;
+				}
 			}
 		);
 
 		stateMachine->AddState(patrol);
+		stateMachine->AddState(chasePlayer);
+		stateMachine->AddTransition(patrolToChase);
+		stateMachine->AddTransition(chaseToPatrol);
 	}
 }
 
@@ -149,7 +211,7 @@ void NetworkPlayer::MovePlayer(bool Up, bool Down, bool Right, bool Left)
 	}
 	Vector3 force = MoveDir * f;
 
-	std::cout << "velocity : " << physicsObject->GetLinearVelocity().Length() << std::endl;
+	//std::cout << "velocity : " << physicsObject->GetLinearVelocity().Length() << std::endl;
 	this->physicsObject->AddForce(force);
 	Debug::DrawLine(this->transform.GetPosition(), this->transform.GetPosition() + force, Debug::RED, 0.0f);
 }
@@ -172,13 +234,14 @@ bool NetworkPlayer::AIMoveTo(Vector3 destination, float dt)
 			return true;
 		}
 		waypoint = waypoints.begin() + 1;
-		pathfindingTimer = 1.0f;
+		pathfindingTimer = 3.0f;
 	}
 	if (waypoint == waypoints.end()) 
 	{ 
 		pathfindingTimer = 0.0f;
 		return true; 
 	}
+	SetPlayerYaw(*waypoint);
 	if (AIMove(*waypoint)) { ++waypoint; }
 
 	return false;
@@ -187,7 +250,7 @@ bool NetworkPlayer::AIMoveTo(Vector3 destination, float dt)
 bool NetworkPlayer::AIMove(Vector3 destination)
 {
 	Vector3 MoveDir = destination - transform.GetPosition();
-	if (MoveDir.Length() < 0.5f)
+	if (MoveDir.Length() < 2.0f)
 	{
 		return true;// have arrived the destination;
 	}
@@ -200,6 +263,77 @@ bool NetworkPlayer::AIMove(Vector3 destination)
 	MovePlayer(move[Up], move[Down], move[Right], move[Left]);
 
 	return false; //have not arrived the destination
+}
+
+NetworkPlayer* NetworkPlayer::AIvision()
+{
+	Vector3 currentPos = transform.GetPosition();
+	Ray sightLine(currentPos, this->getPlayerForwardVector());
+
+	Debug::DrawLine(currentPos, currentPos + getPlayerForwardVector() * 50, Debug::CYAN);
+
+	RayCollision closestCollision;
+	GameWorld* world = game->getGameWorld();
+	if (world->Raycast(sightLine, closestCollision, true))
+	{
+		GameObject* hitObject = (GameObject*)closestCollision.node;
+		if (dynamic_cast<NetworkPlayer*>(hitObject))
+		{
+			return (NetworkPlayer*)hitObject;
+		}
+	}
+	return nullptr;
+}
+
+void NetworkPlayer::UpdateVisualList(float dt)
+{
+	NetworkPlayer* sawPlayer = AIvision();
+	bool flag = true;
+	if (sawPlayer != nullptr)
+	{
+		if (sawPlayer->GetPlayerNum() > 3)
+		{
+			sawPlayer = nullptr; // AI not count
+		}
+		else
+		{
+			flag = false;
+		}
+	}
+
+	for (auto i = viualList.begin(); i != viualList.end(); )
+	{
+		if (sawPlayer != nullptr) // not an AI
+		{
+			if (sawPlayer == i->first)
+			{
+				i->second = 3.0f;
+				flag = true;
+			}
+		}
+		i->second -= dt;
+		if (i->second < 0)
+		{
+			i = viualList.erase(i);
+		}
+		else {
+			++i;
+		}
+	}
+
+	if (!flag)
+	{
+		viualList.push_back(std::pair<NetworkPlayer*, float>(sawPlayer, 3.0 - dt));
+	}
+}
+
+NetworkPlayer* NetworkPlayer::getVisualTarget()
+{
+	auto itr = viualList.begin();
+	if (itr == viualList.end()) {
+		return nullptr;
+	}
+	return itr->first;
 }
 
 void NetworkPlayer::PlayerSprint()

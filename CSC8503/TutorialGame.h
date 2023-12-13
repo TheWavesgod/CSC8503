@@ -39,6 +39,7 @@ namespace NCL {
 			virtual void UpdateGame(float dt);
 
 			bool findPathToDestination(Vector3 startrPos, Vector3 Destination, vector<Vector3>& pathNodes);
+			GameWorld* getGameWorld() const { return world; }
 
 		protected:
 			void InitialiseAssets();

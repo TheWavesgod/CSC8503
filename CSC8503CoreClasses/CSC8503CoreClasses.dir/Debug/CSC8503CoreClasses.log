@@ -1,20 +1,2 @@
-﻿  GameObject.h
-  GameWorld.h
-  Transform.h
-  GameObject.cpp
-  GameWorld.cpp
-  Transform.cpp
-  StateMachine.cpp
-  CollisionDetection.h
-  CollisionDetection.cpp
-  QuadTree.h
-  QuadTree.cpp
-  GameServer.cpp
-  NetworkObject.h
-  NetworkObject.cpp
-  PositionConstraint.cpp
-  OrientationConstraint.cpp
-  PhysicsObject.cpp
-  PhysicsSystem.cpp
-  PhysicsSystem.h
+﻿  BehaviourSelector.h
   CSC8503CoreClasses.vcxproj -> D:\CppProject\CSC8503 2023\x64\Debug\CSC8503CoreClasses.lib

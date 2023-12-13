@@ -502,6 +502,7 @@ int Coursework()
 
 int main()
 {
+	//TestBehaviourTree();
 	Coursework();
 	//tutorial_test();
 }

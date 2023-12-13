@@ -623,28 +623,33 @@ void NetworkedGame::SpawnPlayer() {
 void NetworkedGame::SpawnAI()		
 {
 	geese.clear();
-	//NetworkPlayer* goose = NetworkPlayer::createAngryGoose(this, 6);
-	NetworkPlayer* goose = new NetworkPlayer(this, 6, 1);
+	for (int num = 6; num < 8; ++num)
+	{
+		NetworkPlayer* goose = new NetworkPlayer(this, num, 1);
+		geese.push_back(goose);
 
-	geese.push_back(goose);
-	float meshSize = 2.0f;
-	Vector3 volumeSize = Vector3(1.0, 1.6, 1.0);
-	float inverseMass = 1.0f / 60.0f;
+		float meshSize = 2.0f;
+		Vector3 volumeSize = Vector3(1.0, 1.6, 1.0);
+		float inverseMass = 1.0f / 60.0f;
+		Vector3 pos = num == 6 ? Vector3(-108, 1, -108) : Vector3(108, 1, 108);
+		goose->setPatrolIndex(num - 5);
 
-	AABBVolume* volume = new AABBVolume(volumeSize);
-	goose->SetBoundingVolume((CollisionVolume*)volume);
-	goose->GetTransform()
-		.SetScale(Vector3(meshSize, meshSize, meshSize))
-		.SetPosition(Vector3(-188, 1, -188));
+		AABBVolume* volume = new AABBVolume(volumeSize);
+		goose->SetBoundingVolume((CollisionVolume*)volume);
+		goose->GetTransform()
+			.SetScale(Vector3(meshSize, meshSize, meshSize))
+			.SetPosition(pos);
 
-	goose->SetRenderObject(new RenderObject(&goose->GetTransform(), gooseMesh, nullptr, basicShader));
-	goose->SetPhysicsObject(new PhysicsObject(&goose->GetTransform(), goose->GetBoundingVolume()));
+		goose->SetRenderObject(new RenderObject(&goose->GetTransform(), gooseMesh, nullptr, basicShader));
+		goose->SetPhysicsObject(new PhysicsObject(&goose->GetTransform(), goose->GetBoundingVolume()));
+		goose->SetNetworkObject(new NetworkObject(*goose, num));
 
-	goose->GetPhysicsObject()->SetInverseMass(inverseMass);
-	goose->GetPhysicsObject()->InitCubeInertia();
-
-	world->AddGameObject(goose);
-	networkObjects.insert(std::pair<int, NetworkObject*>(6, goose->GetNetworkObject()));
+		goose->GetPhysicsObject()->SetInverseMass(inverseMass);
+		goose->GetPhysicsObject()->InitCubeInertia();
+		goose->GetRenderObject()->SetColour(Vector4(0.588, 0.3, 0.08, 1));
+		world->AddGameObject(goose);
+		networkObjects.insert(std::pair<int, NetworkObject*>(num, goose->GetNetworkObject()));
+	}
 }
 
 void NetworkedGame::SpawnItem()

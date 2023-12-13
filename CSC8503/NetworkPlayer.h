@@ -1,6 +1,9 @@
 #pragma once
 #include "GameObject.h"
 #include "GameClient.h"
+#include <queue>
+
+using std::queue;
 
 namespace NCL {
 	namespace CSC8503 {
@@ -43,6 +46,10 @@ namespace NCL {
 			bool AIMoveTo(Vector3 destination, float dt);
 			bool AIMove(Vector3 destination);
 
+			NetworkPlayer* AIvision();
+			void UpdateVisualList(float dt);
+			NetworkPlayer* getVisualTarget();
+
 			void PlayerSprint();
 			void PlayerFire();
 
@@ -64,6 +71,9 @@ namespace NCL {
 
 			StateMachine* getStateMachine() const { return stateMachine; }
 			void setStateMachine(StateMachine* val) { stateMachine = val; }
+
+			int getPatrolIndex()const { return patrolIndex; }
+			void setPatrolIndex(int val) { patrolIndex = val; }
 		protected:
 			void UpdateTimer(float dt);
 
@@ -79,10 +89,12 @@ namespace NCL {
 			float pathfindingTimer = 0.0f;
 			vector<Vector3> waypoints;
 			waypointItr waypoint;
+			int patrolIndex;
 
 			bool haveTreasure;
 
 			StateMachine* stateMachine = nullptr;
+			vector<std::pair<NetworkPlayer*, float>>  viualList;
 		};
 	}
 }

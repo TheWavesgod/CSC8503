@@ -1,6 +1,9 @@
-﻿  NetworkPlayer.cpp
+﻿  Main.cpp
 D:\CppProject\CSC8503 2023\CSC8503\NetworkedGame.h(155,57): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
 D:\CppProject\CSC8503 2023\CSC8503\NetworkedGame.h(250,45): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
-D:\CppProject\CSC8503 2023\CSC8503CoreClasses\PhysicsObject.h(82,10): warning C4305: “初始化”: 从“double”到“float”截断
-D:\CppProject\CSC8503 2023\CSC8503CoreClasses\PhysicsObject.h(83,10): warning C4305: “初始化”: 从“double”到“float”截断
+D:\CppProject\CSC8503 2023\CSC8503\Main.cpp(118,29): warning C4244: “=”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\Main.cpp(230,29): warning C4244: “=”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\Main.cpp(261,15): warning C4129: “ ”: 不可识别的字符转义序列
+D:\CppProject\CSC8503 2023\CSC8503\Main.cpp(501): warning C4715: “Coursework”: 不是所有的控件路径都返回值
+D:\CppProject\CSC8503 2023\CSC8503\Main.cpp(465): warning C4715: “tutorial_test”: 不是所有的控件路径都返回值
   CSC8503.vcxproj -> D:\CppProject\CSC8503 2023\x64\Debug\CSC8503.exe
