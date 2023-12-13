@@ -55,6 +55,12 @@
     <ClCompile Include="D:\CppProject\CSC8503 2023\CSC8503CoreClasses\BehaviourSequence.cpp">
       <Filter>AI\Behaviour Trees</Filter>
     </ClCompile>
+    <ClCompile Include="D:\CppProject\CSC8503 2023\CSC8503CoreClasses\BehaviourParallel.h">
+      <Filter>AI\Behaviour Trees</Filter>
+    </ClCompile>
+    <ClCompile Include="D:\CppProject\CSC8503 2023\CSC8503CoreClasses\BehaviourParallel.cpp">
+      <Filter>AI\Behaviour Trees</Filter>
+    </ClCompile>
     <ClCompile Include="D:\CppProject\CSC8503 2023\CSC8503CoreClasses\PushdownMachine.h">
       <Filter>AI\Pushdown Automata</Filter>
     </ClCompile>

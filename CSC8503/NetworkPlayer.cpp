@@ -6,6 +6,7 @@
 #include "StateTransition.h"
 #include "State.h"
 
+
 using namespace NCL;
 using namespace CSC8503;
 
@@ -121,6 +122,10 @@ NetworkPlayer::NetworkPlayer(NetworkedGame* game, int num, int AIKind)
 		stateMachine->AddTransition(patrolToChase);
 		stateMachine->AddTransition(chaseToPatrol);
 	}
+	else if (AIKind == 2)
+	{
+		CreateUndercoverAgent();
+	}
 }
 
 NetworkPlayer::~NetworkPlayer()	{
@@ -139,6 +144,23 @@ void NetworkPlayer::OnCollisionBegin(GameObject* otherObject) {
 void NetworkPlayer::GameTick(float dt)
 {
 	UpdateTimer(dt);
+}
+
+void NetworkPlayer::ExcuteBehavioursTree(float dt)
+{
+	if(rootSequence != nullptr)
+	{
+		BehaviourState state = rootSequence->Execute(dt);
+		switch (state)
+		{
+		case Success:
+			rootSequence->Reset();
+			break;
+		case Failure:
+			rootSequence->Reset();
+			break;
+		}
+	}
 }
 
 Quaternion GenerateOrientation(const Vector3& axis, float angle)
@@ -376,5 +398,82 @@ void NetworkPlayer::UpdateTimer(float dt)
 
 	if (sprintTimer < 0) { sprintTimer = 0; }
 	if (fireTimer < 0) { fireTimer = 0; }
+}
+
+void NetworkPlayer::CreateUndercoverAgent()
+{
+	BehaviourAction* patrol = new BehaviourAction("Patrol",
+		[&](float dt, BehaviourState state)->BehaviourState
+		{
+			if (state == Initialise)
+			{
+				patrolIndex = 0;
+				state = Ongoing;
+			}
+			else if (state == Ongoing)
+			{
+				if (this->AIMoveTo(patrolPoints[patrolIndex], dt))
+				{
+					patrolIndex++;
+					patrolIndex = patrolIndex % 4;
+				}
+				if (targetPlayer != nullptr)
+				{
+					return Success;
+				}
+			}
+			return state;
+		}
+	);
+
+	BehaviourAction* searchPlayer = new BehaviourAction("Search Player",
+		[&](float dt, BehaviourState state)->BehaviourState
+		{
+			if (state == Initialise)
+			{
+				state = Ongoing;
+			}
+			else if (state == Ongoing)
+			{
+				this->UpdateVisualList(dt);
+				if (this->getVisualTarget() != nullptr)
+				{
+					if (this->getVisualTarget()->GetPlayerNum() < 4)
+					{
+						targetPlayer = this->getVisualTarget();
+						return Success;
+					}
+				}
+			}
+			return state;
+		}
+	);
+
+	BehaviourAction* chaseTarget = new BehaviourAction("Chase Target",
+		[&](float dt, BehaviourState state)->BehaviourState
+		{
+			if (state == Initialise)
+			{
+				state = Ongoing;
+			}
+			else if (state == Ongoing)
+			{
+				Vector3 pos = targetPlayer->GetTransform().GetPosition();
+				AIMoveTo(pos, dt);
+			}
+			return state;
+		}
+	);
+
+	BehaviourParallel* parallel = new BehaviourParallel("Patrol Routine");
+	parallel->AddChild(patrol);
+	parallel->AddChild(searchPlayer);
+
+	BehaviourSelector* selector = new BehaviourSelector("Chase Player");
+	selector->AddChild(chaseTarget);
+
+	rootSequence = new BehaviourSequence("Root Sequence");
+	rootSequence->AddChild(parallel);
+	rootSequence->AddChild(selector);
 }
 

@@ -312,6 +312,8 @@ void NetworkedGame::UpdateGamePlayerInput(float dt)
 		{
 			i->getStateMachine()->Update(dt);
 		}
+
+		undercoverAgent->ExcuteBehavioursTree(dt);
 	}
 
 	float yaw = treasure->GetTransform().GetOrientation().ToEuler().y + 45 * dt;
@@ -363,6 +365,7 @@ void NetworkedGame::ServerSendRoundState()
 	if (isRoundstart)
 	{
 		for (int i = 0; i < 4; ++i) { state.scoretable[i] = scoreTable[i]; }
+		state.isTreasureExist = treasure->getOwner() == nullptr ? true : false;
 	}
 	thisServer->SendGlobalPacket(state);
 }
@@ -461,6 +464,12 @@ bool NetworkedGame::clientProcessRp(RoundStatePacket* rp)
 	}
 	if (rp->isRoundStart) {
 		for (int i = 0; i < 4; ++i) { scoreTable[i] = rp->scoretable[i]; }
+		if (rp->isTreasureExist) {
+			treasure->GetRenderObject()->SetColour(Vector4(1, 0.8, 0, 1));
+		}
+		else {
+			treasure->GetRenderObject()->SetColour(Vector4(0, 0, 0, 0));
+		}
 	}
 	return true;
 }
@@ -650,6 +659,26 @@ void NetworkedGame::SpawnAI()
 		world->AddGameObject(goose);
 		networkObjects.insert(std::pair<int, NetworkObject*>(num, goose->GetNetworkObject()));
 	}
+
+	undercoverAgent = new NetworkPlayer(this, 8, 2);
+	float meshSize = 3.0f;
+	Vector3 volumeSize = Vector3(1.0, 2.0, 1.0);
+	float inverseMass = 1.0f / 60.0f;
+	AABBVolume* volume = new AABBVolume(volumeSize);
+	undercoverAgent->SetBoundingVolume((CollisionVolume*)volume);
+	undercoverAgent->GetTransform()
+		.SetScale(Vector3(meshSize, meshSize, meshSize))
+		.SetPosition(Vector3(0,0,0));
+
+	undercoverAgent->SetRenderObject(new RenderObject(&undercoverAgent->GetTransform(), enemyMesh, nullptr, basicShader));
+	undercoverAgent->SetPhysicsObject(new PhysicsObject(&undercoverAgent->GetTransform(), undercoverAgent->GetBoundingVolume()));
+	undercoverAgent->SetNetworkObject(new NetworkObject(*undercoverAgent, 8));
+
+	undercoverAgent->GetPhysicsObject()->SetInverseMass(inverseMass);
+	undercoverAgent->GetPhysicsObject()->InitCubeInertia();
+	undercoverAgent->GetRenderObject()->SetColour(Vector4(0.588, 0.3, 0.08, 1));
+	world->AddGameObject(undercoverAgent);
+	networkObjects.insert(std::pair<int, NetworkObject*>(8, undercoverAgent->GetNetworkObject()));
 }
 
 void NetworkedGame::SpawnItem()

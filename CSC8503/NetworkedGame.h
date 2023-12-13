@@ -116,6 +116,7 @@ namespace NCL {
 			GameObject* localPlayer;
 
 			std::vector<NetworkPlayer*> geese;
+			NetworkPlayer* undercoverAgent;
 
 			PushdownMachine* MenuSystem;
 			bool isRoundstart;

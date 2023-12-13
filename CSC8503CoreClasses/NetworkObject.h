@@ -65,6 +65,7 @@ namespace NCL::CSC8503 {
 	struct RoundStatePacket : public GamePacket
 	{
 		bool isRoundStart;
+		bool isTreasureExist;
 		int scoretable[4];
 		RoundStatePacket()
 		{

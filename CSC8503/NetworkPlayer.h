@@ -1,6 +1,13 @@
 #pragma once
 #include "GameObject.h"
 #include "GameClient.h"
+
+#include "BehaviourNode.h"
+#include "BehaviourParallel.h"
+#include "BehaviourSelector.h"
+#include "BehaviourSequence.h"
+#include "BehaviourAction.h"
+
 #include <queue>
 
 using std::queue;
@@ -32,6 +39,7 @@ namespace NCL {
 			void OnCollisionBegin(GameObject* otherObject) override;
 
 			void GameTick(float dt);
+			void ExcuteBehavioursTree(float dt);
 
 			int GetPlayerNum() const {
 				return playerNum;
@@ -77,6 +85,8 @@ namespace NCL {
 		protected:
 			void UpdateTimer(float dt);
 
+			void CreateUndercoverAgent();
+
 			NetworkedGame* game;
 			int playerNum;
 			char btnState[4] = { 0,0,0,0 };
@@ -95,6 +105,9 @@ namespace NCL {
 
 			StateMachine* stateMachine = nullptr;
 			vector<std::pair<NetworkPlayer*, float>>  viualList;
+
+			BehaviourSequence* rootSequence;
+			NetworkPlayer* targetPlayer = nullptr;
 		};
 	}
 }
