@@ -39,6 +39,9 @@ TutorialGame::TutorialGame() : controller(*Window::GetWindow()->GetKeyboard(), *
 	controller.MapAxis(3, "XLook");
 	controller.MapAxis(4, "YLook");
 
+	gridBias = Vector3(-200, 0, -200);
+	grid = new NavigationGrid("Map.txt", gridBias);
+
 	InitialiseAssets();
 }
 
@@ -79,6 +82,8 @@ TutorialGame::~TutorialGame()	{
 	delete physics;
 	delete renderer;
 	delete world;
+
+	delete grid;
 }
 
 void TutorialGame::UpdateGame(float dt) {
@@ -215,6 +220,25 @@ void TutorialGame::LockedObjectMovement() {
 	if (Window::GetKeyboard()->KeyDown(KeyCodes::NEXT)) {
 		selectionObject->GetPhysicsObject()->AddForce(Vector3(0,-10,0));
 	}
+}
+
+bool TutorialGame::findPathToDestination(Vector3 startrPos, Vector3 Destination, vector<Vector3>& pathNodes)
+{
+	NavigationPath outPath;
+
+	Vector3 startPos = startrPos - gridBias;
+	Vector3 endPos = Destination - gridBias;
+
+	bool found = grid->FindPath(startPos, endPos, outPath);
+	if (!found) { return found; }
+
+	pathNodes.clear();
+	Vector3 pos;
+	while (outPath.PopWaypoint(pos))
+	{
+		pathNodes.push_back(pos);
+	}
+	return found;
 }
 
 void TutorialGame::BridgeConstraintTest()

@@ -5,6 +5,7 @@
 namespace NCL {
 	namespace CSC8503 {
 		class NetworkedGame;
+		class StateMachine;
 
 		enum ScoreType {
 			bulletHitAI  = 3,
@@ -15,6 +16,8 @@ namespace NCL {
 		public:
 			static constexpr float SprintCDT = 4.0f;
 			static constexpr float FireCDT = 2.0f;
+
+			static NetworkPlayer* createAngryGoose(NetworkedGame* game, int num);
 
 			NetworkPlayer(NetworkedGame* game, int num);
 			~NetworkPlayer();
@@ -59,6 +62,8 @@ namespace NCL {
 
 			float sprintTimer;
 			float fireTimer;
+
+			StateMachine* stateMachine = nullptr;
 		};
 	}
 }

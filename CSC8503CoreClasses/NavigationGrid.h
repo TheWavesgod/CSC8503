@@ -32,7 +32,7 @@ namespace NCL {
 		class NavigationGrid : public NavigationMap	{
 		public:
 			NavigationGrid();
-			NavigationGrid(const std::string&filename);
+			NavigationGrid(const std::string&filename, Vector3 startPoint);
 			~NavigationGrid();
 
 			bool FindPath(const Vector3& from, const Vector3& to, NavigationPath& outPath) override;

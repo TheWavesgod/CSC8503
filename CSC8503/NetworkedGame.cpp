@@ -206,6 +206,7 @@ void NetworkedGame::InitWorld()
 	//testStateObject = AddStateObjectToWorld(Vector3(0, 10, 0));
 
 	SpawnPlayer();
+	SpawnAI();
 }
 
 void NetworkedGame::UpdateAsServer(float dt) {
@@ -596,6 +597,11 @@ void NetworkedGame::SpawnPlayer() {
 		localPlayer = serverPlayers[GetClientPlayerNum()];
 	}
 	LockCameraToObject(localPlayer);
+}
+
+void NetworkedGame::SpawnAI()
+{
+
 }
 
 void NetworkedGame::SpawnBullet(NetworkPlayer* o, Vector3 firePos, Vector3 fireDir)

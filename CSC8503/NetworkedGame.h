@@ -36,6 +36,7 @@ namespace NCL {
 			void UpdateGame(float dt) override;
 
 			void SpawnPlayer();
+			void SpawnAI();
 			void SpawnBullet(NetworkPlayer* o, Vector3 firePos, Vector3 fireDir);
 			void SeverSendBulletDelPckt(int bulletID);
 			void ClientSpawnBullet(int playNum, int bulletID);

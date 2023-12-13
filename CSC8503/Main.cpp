@@ -78,12 +78,13 @@ void TestStateMachine()
 
 vector<Vector3> testNodes;
 void TestPathfinding() {
-	NavigationGrid grid("TestGrid1.txt");
+	Vector3 bias = Vector3(-200, 3, -200);
+	NavigationGrid grid("Map.txt", bias);
 
 	NavigationPath outPath;
 
-	Vector3 startPos(80, 0, 10);
-	Vector3 endPos(80, 0, 80);
+	Vector3 startPos = Vector3(-188, 0, -188) - bias;
+	Vector3 endPos = Vector3(0, 0, 0) - bias;
 
 	bool found = grid.FindPath(startPos, endPos, outPath);
 

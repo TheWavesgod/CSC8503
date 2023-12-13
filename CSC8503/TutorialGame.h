@@ -7,6 +7,9 @@
 #endif
 #include "PhysicsSystem.h"
 
+#include "NavigationGrid.h"
+#include "NavigationMesh.h"
+
 #include "StateGameObject.h"
 
 namespace NCL {
@@ -62,6 +65,8 @@ namespace NCL {
 			void DebugObjectMovement();
 			void LockedObjectMovement();
 
+			bool findPathToDestination(Vector3 startrPos, Vector3 Destination, vector<Vector3>& pathNodes);
+
 			void BridgeConstraintTest();
 
 			GameObject* AddFloorToWorld(const Vector3& position);
@@ -114,6 +119,9 @@ namespace NCL {
 			}
 
 			GameObject* objClosest = nullptr;
+
+			Vector3 gridBias;
+			NavigationGrid* grid;
 
 			StateGameObject* testStateObject;
 		};

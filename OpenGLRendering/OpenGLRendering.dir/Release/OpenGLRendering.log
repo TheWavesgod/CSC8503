@@ -1,5 +1,4 @@
-﻿  Building Custom Rule D:/CppProject/CSC8503 2023/OpenGLRendering/CMakeLists.txt
-  cmake_pch.cxx
+﻿  cmake_pch.cxx
   OGLTexture.h
   OGLShader.h
   OGLRenderer.h

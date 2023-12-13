@@ -2,8 +2,17 @@
 #include "NetworkedGame.h"
 #include "PhysicsObject.h"
 
+#include "StateMachine.h"
+#include "StateTransition.h"
+#include "State.h"
+
 using namespace NCL;
 using namespace CSC8503;
+
+NetworkPlayer* NetworkPlayer::createAngryGoose(NetworkedGame* game, int num)
+{
+	return nullptr;
+}
 
 NetworkPlayer::NetworkPlayer(NetworkedGame* game, int num)	{
 	this->game = game;
@@ -15,7 +24,7 @@ NetworkPlayer::NetworkPlayer(NetworkedGame* game, int num)	{
 }
 
 NetworkPlayer::~NetworkPlayer()	{
-
+	delete stateMachine;
 }
 
 void NetworkPlayer::OnCollisionBegin(GameObject* otherObject) {

@@ -1,38 +1,14 @@
-﻿  Building Custom Rule D:/CppProject/CSC8503 2023/NCLCoreClasses/CMakeLists.txt
-  cmake_pch.cxx
-  Assets.cpp
-  SimpleFont.cpp
-  TextureLoader.cpp
-  TextureWriter.cpp
+﻿  Camera.cpp
+  Frustum.cpp
   Maths.cpp
-  Matrix2.cpp
   Matrix3.cpp
   Matrix4.cpp
+  Mesh.cpp
+  MshLoader.cpp
   Plane.cpp
-  Frustum.cpp
   Quaternion.cpp
+  SimpleFont.cpp
   Vector2.cpp
   Vector3.cpp
   Vector4.cpp
-  Vector2i.cpp
-  Vector3I.cpp
-  Vector4I.cpp
-  MeshAnimation.cpp
-  Mesh.cpp
-  MshLoader.cpp
-  正在编译...
-  MeshMaterial.cpp
-  RendererBase.cpp
-  Shader.cpp
-  Texture.cpp
-  Camera.cpp
-  GameTimer.cpp
-  Keyboard.cpp
-  Mouse.cpp
-  Window.cpp
-  Controller.cpp
-  KeyboardMouseController.cpp
-  Win32Keyboard.cpp
-  Win32Mouse.cpp
-  Win32Window.cpp
   NCLCoreClasses.vcxproj -> D:\CppProject\CSC8503 2023\NCLCoreClasses\Release\NCLCoreClasses.lib
