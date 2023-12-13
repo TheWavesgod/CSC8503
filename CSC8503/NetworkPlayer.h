@@ -9,17 +9,21 @@ namespace NCL {
 
 		enum ScoreType {
 			bulletHitAI  = 3,
-			bulletHitPlayer = 5
+			bulletHitPlayer = 5,
+			bringBackTreasure = 100
 		};
+
+		typedef vector<Vector3>::iterator waypointItr;
 
 		class NetworkPlayer : public GameObject {
 		public:
 			static constexpr float SprintCDT = 4.0f;
 			static constexpr float FireCDT = 2.0f;
 
-			static NetworkPlayer* createAngryGoose(NetworkedGame* game, int num);
+			//static NetworkPlayer* createAngryGoose(NetworkedGame* game, int num);
 
 			NetworkPlayer(NetworkedGame* game, int num);
+			NetworkPlayer(NetworkedGame* game, int num, int AIKind);
 			~NetworkPlayer();
 
 			void OnCollisionBegin(GameObject* otherObject) override;
@@ -35,6 +39,10 @@ namespace NCL {
 
 			void SetPlayerYaw(const Vector3& pointPos);
 			void MovePlayer(bool Up, bool Down, bool Right, bool Left);
+
+			bool AIMoveTo(Vector3 destination, float dt);
+			bool AIMove(Vector3 destination);
+
 			void PlayerSprint();
 			void PlayerFire();
 
@@ -51,6 +59,11 @@ namespace NCL {
 
 			NetworkedGame* getGame() { return game; }
 
+			void setHaveTreasure(bool val) { haveTreasure = val; }
+			bool getHaveTreasure() const { return haveTreasure; }
+
+			StateMachine* getStateMachine() const { return stateMachine; }
+			void setStateMachine(StateMachine* val) { stateMachine = val; }
 		protected:
 			void UpdateTimer(float dt);
 
@@ -62,6 +75,12 @@ namespace NCL {
 
 			float sprintTimer;
 			float fireTimer;
+
+			float pathfindingTimer = 0.0f;
+			vector<Vector3> waypoints;
+			waypointItr waypoint;
+
+			bool haveTreasure;
 
 			StateMachine* stateMachine = nullptr;
 		};

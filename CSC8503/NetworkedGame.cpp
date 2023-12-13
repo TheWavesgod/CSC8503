@@ -15,6 +15,9 @@
 #include "StateGameObject.h"
 #include "Bullet.h"
 
+#include "StateMachine.h"
+#include "State.h"
+
 
 #define COLLISION_MSG 30
 
@@ -123,6 +126,7 @@ void NetworkedGame::UpdateGame(float dt) {
 		updateRoundTime(dt);
 		UpdateGamePlayerInput(dt);
 		UpdateScoreTable();
+		LevelDelayOver(dt);
 
 		//Test View
 		if (Window::GetKeyboard()->KeyPressed(KeyCodes::Q))
@@ -207,6 +211,7 @@ void NetworkedGame::InitWorld()
 
 	SpawnPlayer();
 	SpawnAI();
+	SpawnItem();
 }
 
 void NetworkedGame::UpdateAsServer(float dt) {
@@ -302,7 +307,15 @@ void NetworkedGame::UpdateGamePlayerInput(float dt)
 			}
 		}
 		bullet::UpdateBulletList();
+
+		for (auto i : geese)
+		{
+			i->getStateMachine()->Update(dt);
+		}
 	}
+
+	float yaw = treasure->GetTransform().GetOrientation().ToEuler().y + 45 * dt;
+	treasure->GetTransform().SetOrientation(Quaternion::EulerAnglesToQuaternion(0, yaw, 0));
 }
 
 void NetworkedGame::UpdateScoreTable()
@@ -367,6 +380,7 @@ void NetworkedGame::ServerSendPlayerState()
 				state.playerNum = i;
 				state.state[0] = (int)thisPlayer->getSprintCD();
 				state.state[1] = (int)thisPlayer->getFireCD();
+				state.state[2] = thisPlayer->getHaveTreasure() ? 1 : 0;
 				thisServer->SendGlobalPacket(state);
 			}
 		}
@@ -376,7 +390,13 @@ void NetworkedGame::ServerSendPlayerState()
 void NetworkedGame::updateRoundTime(float dt)
 {
 	RoundTime -= dt;
-
+	if (RoundTime < 0.0)
+	{
+		if (thisServer)
+		{
+			roundDelayOver = true;
+		}
+	}
 }
 
 void NetworkedGame::UpdateMinimumState() {
@@ -478,6 +498,7 @@ bool NetworkedGame::clientProcessPp(PlayerStatePacket* Pp)
 			thisPlayer->setSprintCD(Pp->state[0]);
 			thisPlayer->setFireCD(Pp->state[1]);
 			thisPlayer->setPlayerSocer(scoreTable[Pp->playerNum]);
+			thisPlayer->setHaveTreasure(Pp->state[2] == 1 ? true : false);
 			return true;
 		}
 	}
@@ -599,9 +620,112 @@ void NetworkedGame::SpawnPlayer() {
 	LockCameraToObject(localPlayer);
 }
 
-void NetworkedGame::SpawnAI()
+void NetworkedGame::SpawnAI()		
 {
+	geese.clear();
+	//NetworkPlayer* goose = NetworkPlayer::createAngryGoose(this, 6);
+	NetworkPlayer* goose = new NetworkPlayer(this, 6, 1);
 
+	geese.push_back(goose);
+	float meshSize = 2.0f;
+	Vector3 volumeSize = Vector3(1.0, 1.6, 1.0);
+	float inverseMass = 1.0f / 60.0f;
+
+	AABBVolume* volume = new AABBVolume(volumeSize);
+	goose->SetBoundingVolume((CollisionVolume*)volume);
+	goose->GetTransform()
+		.SetScale(Vector3(meshSize, meshSize, meshSize))
+		.SetPosition(Vector3(-188, 1, -188));
+
+	goose->SetRenderObject(new RenderObject(&goose->GetTransform(), gooseMesh, nullptr, basicShader));
+	goose->SetPhysicsObject(new PhysicsObject(&goose->GetTransform(), goose->GetBoundingVolume()));
+
+	goose->GetPhysicsObject()->SetInverseMass(inverseMass);
+	goose->GetPhysicsObject()->InitCubeInertia();
+
+	world->AddGameObject(goose);
+	networkObjects.insert(std::pair<int, NetworkObject*>(6, goose->GetNetworkObject()));
+}
+
+void NetworkedGame::SpawnItem()
+{
+	for (int i = 0; i < 4; ++i)
+	{
+		if (PlayersList[i] != -1)
+		{
+			Item* spwanPoint = new Item(
+				[&](NetworkPlayer* hitplayer, Item* thisItem)->void
+				{
+					if (hitplayer == thisItem->getOwner())
+					{
+						if (hitplayer->getHaveTreasure()) 
+						{ 
+							if (!roundDelayOver)
+							{
+								hitplayer->addPlayerScore(bringBackTreasure);
+								roundDelayOver = true;
+							} 
+						}
+						//Debug::DrawLine(hitplayer->GetTransform().GetPosition(), hitplayer->GetTransform().GetPosition() + Vector3(0, 50, 0), Debug::MAGENTA);
+					}
+				}
+			);
+			if (serverPlayers[i]) { spwanPoint->setOwner((NetworkPlayer*)(serverPlayers[i])); }
+			Vector4 colour;
+			Vector3 pos;
+			switch (i)
+			{
+			case 0:
+				colour = Debug::RED;
+				pos = Vector3(-188, 0.5, -188);
+				break;
+			case 1:
+				colour = Debug::BLUE;
+				pos = Vector3( 188, 0.5, -188);
+				break;
+			case 2:
+				colour = Debug::YELLOW;
+				pos = Vector3(-188, 0.5,  188);
+				break;
+			case 3:
+				colour = Debug::CYAN;
+				pos = Vector3( 188, 0.5,  188);
+				break;
+			}
+			colour.w = 0.5;
+			Vector3 halfsize = Vector3(12, 0.5, 12);
+
+			AABBVolume* volume = new AABBVolume(halfsize);
+			spwanPoint->SetBoundingVolume((CollisionVolume*)volume);
+			spwanPoint->GetTransform()
+				.SetScale(halfsize * 2)
+				.SetPosition(pos);
+			spwanPoint->SetRenderObject(new RenderObject(&spwanPoint->GetTransform(), cubeMesh, basicTex, basicShader));
+			spwanPoint->GetRenderObject()->SetColour(colour);
+			spwanPoint->SetPhysicsObject(nullptr);
+			world->AddGameObject(spwanPoint);
+		}
+	}
+	
+	treasure = new Item(
+		[&](NetworkPlayer* hitplayer, Item* thisItem)->void
+		{
+			if (thisItem->getOwner() == nullptr)
+			{
+				hitplayer->setHaveTreasure(true);
+				thisItem->setOwner(hitplayer);
+				thisItem->GetRenderObject()->SetColour(Vector4(0, 0, 0, 0));
+			}
+		}
+	);
+	float radius = 0.4f;
+	SphereVolume* volume = new SphereVolume(2.0f);
+	treasure->SetBoundingVolume((CollisionVolume*)volume);
+	treasure->GetTransform().SetScale(Vector3(radius, radius, radius)).SetPosition(Vector3(4, 2, -4));
+	treasure->SetRenderObject(new RenderObject(&treasure->GetTransform(), coinMesh, basicTex, basicShader));
+	treasure->GetRenderObject()->SetColour(Vector4(1, 0.8, 0, 1));
+	treasure->SetPhysicsObject(nullptr);
+	world->AddGameObject(treasure);
 }
 
 void NetworkedGame::SpawnBullet(NetworkPlayer* o, Vector3 firePos, Vector3 fireDir)
@@ -730,12 +854,26 @@ void NetworkedGame::StartLevel() {
 	//Change Round State
 	GlobalStateID = -1;
 	RoundTime = 600.0f;
+	roundDelayOver = false;
+	delayTime = 0.6f;
 	isRoundstart = true;
 }
 
 void NetworkedGame::LevelOver()
 {
 	isRoundstart = false;
+}
+
+void NetworkedGame::LevelDelayOver(float dt)
+{
+	if (roundDelayOver)
+	{
+		delayTime -= dt;
+		if (delayTime < 0.0f)
+		{
+			LevelOver();
+		}
+	}
 }
 
 void NetworkedGame::ReceivePacket(int type, GamePacket* payload, int source) {
@@ -831,6 +969,19 @@ std::string NetworkedGame::getLocalPlayerSprintCDToString()
 		else if (cd == 0) { sct = "Ready"; }
 		sct = "Sprint:" + sct;
 		return sct;
+	}
+	return std::string();
+}
+
+std::string NetworkedGame::getLocalPlayerHasTreasure()
+{
+	if (localPlayer)
+	{
+		NetworkPlayer* p = (NetworkPlayer*)localPlayer;
+		if (p->getHaveTreasure())
+		{
+			return std::string("You Got the Treasure!!!");
+		}
 	}
 	return std::string();
 }

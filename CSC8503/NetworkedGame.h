@@ -15,6 +15,7 @@ namespace NCL {
 		class RoundStatePacket;
 		class PlayerStatePacket;
 		class BulletStatePacket;
+		class Item;
 
 		enum PlayInputBtns {
 			Up,
@@ -37,6 +38,7 @@ namespace NCL {
 
 			void SpawnPlayer();
 			void SpawnAI();
+			void SpawnItem();
 			void SpawnBullet(NetworkPlayer* o, Vector3 firePos, Vector3 fireDir);
 			void SeverSendBulletDelPckt(int bulletID);
 			void ClientSpawnBullet(int playNum, int bulletID);
@@ -45,6 +47,7 @@ namespace NCL {
 
 			void StartLevel();
 			void LevelOver();
+			void LevelDelayOver(float dt);
 
 			void ReceivePacket(int type, GamePacket* payload, int source) override;
 
@@ -55,6 +58,7 @@ namespace NCL {
 			std::string getRoundTimeToString();
 			std::string getLocalPLayerScoreToString();
 			std::string getLocalPlayerSprintCDToString();
+			std::string getLocalPlayerHasTreasure();
 			std::string getLocalPlayerFireCDToString();
 			std::string getPlayersScore(int ID);
 			std::string getSelfPlace();
@@ -111,9 +115,15 @@ namespace NCL {
 			std::vector<GameObject*> serverPlayers;
 			GameObject* localPlayer;
 
+			std::vector<NetworkPlayer*> geese;
+
 			PushdownMachine* MenuSystem;
 			bool isRoundstart;
 			bool isGameover;
+			bool roundDelayOver;
+			float delayTime;
+
+			Item* treasure;
 
 			float RoundTime;
 			std::vector<int> scoreTable;
@@ -155,15 +165,21 @@ namespace NCL {
 			{
 				startDisplayTime -= dt;
 				if (startDisplayTime > 0) { Debug::Print("Round Start!", Vector2(38, 35), Debug::RED); }
+				blinkTime -= dt;
+				if (blinkTime < 0) {
+					displayTreasureSign = !displayTreasureSign;
+					blinkTime = 0.6f;
+				}
 
 				Debug::Print(thisGame->getRoundTimeToString(), Vector2(34, 10), Debug::YELLOW);
 				Debug::Print(thisGame->getLocalPLayerScoreToString(), Vector2(70, 10), Debug::YELLOW);
 				Debug::Print(thisGame->getLocalPlayerSprintCDToString(), Vector2(12, 80), Debug::YELLOW);
 				Debug::Print(thisGame->getLocalPlayerFireCDToString(), Vector2(70, 80), Debug::YELLOW);
+				if (displayTreasureSign) { Debug::Print(thisGame->getLocalPlayerHasTreasure(), Vector2(30, 17), Debug::RED); }
 
 				if (Window::GetKeyboard()->KeyHeld(KeyCodes::TAB))
 				{
-					Debug::Print("====================================", Vector2(15, 20), Debug::YELLOW);
+					Debug::Print("====================================", Vector2(15, 22), Debug::YELLOW);
 					Debug::Print(thisGame->getPlayersScore(0), Vector2(18, 30), Debug::RED);
 					Debug::Print(thisGame->getPlayersScore(1), Vector2(18, 40), Debug::BLUE);
 					Debug::Print(thisGame->getPlayersScore(2), Vector2(18, 50), Debug::YELLOW);
@@ -199,6 +215,8 @@ namespace NCL {
 
 			float startDisplayTime = 1.2f;
 			float overDisplayTime = 1.2f;
+			float blinkTime = 0.6f;
+			bool displayTreasureSign = true;
 		};
 
 		class MultiplayerLobby : public PushdownState

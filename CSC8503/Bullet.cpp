@@ -39,3 +39,16 @@ void bullet::DestroySelf()
 	owner->getGame()->SeverSendBulletDelPckt(bulletID);
 	owner->getGame()->RemoveObjectFromWorld(this, false);
 }
+
+void Item::OnCollisionBegin(GameObject* otherObject)
+{
+	if (dynamic_cast<NetworkPlayer*>(otherObject))
+	{
+		NetworkPlayer* hitPlayer = (NetworkPlayer*)otherObject;
+		if (hitPlayer->GetPlayerNum() > 3)
+		{
+			return;
+		}
+		func(hitPlayer, this);
+	}
+}

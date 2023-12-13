@@ -243,6 +243,11 @@ void PhysicsSystem::ImpulseResolveCollision(GameObject& a, GameObject& b, Collis
 	Transform& transformA = a.GetTransform();
 	Transform& transformB = b.GetTransform();
 
+	if (physA == nullptr || physB == nullptr)
+	{
+		return;
+	}
+
 	float totalMass = physA->GetInverseMass() + physB->GetInverseMass();
 
 	if (totalMass == 0)
@@ -409,7 +414,6 @@ void PhysicsSystem::IntegrateVelocity(float dt)
 	std::vector<GameObject*>::const_iterator first;
 	std::vector<GameObject*>::const_iterator last;
 	gameWorld.GetObjectIterators(first, last);
-	float frameLinearDamping = 1.0f - (0.4f * dt);
 
 	for (auto i = first; i != last; ++i)
 	{
@@ -425,6 +429,7 @@ void PhysicsSystem::IntegrateVelocity(float dt)
 		position += linearVel * dt;
 		transform.SetPosition(position);
 		//Linear Damping
+		float frameLinearDamping = 1.0f - (object->getLinearDamp() * dt);
 		linearVel = linearVel * frameLinearDamping;
 		object->SetLinearVelocity(linearVel);
 
@@ -438,7 +443,7 @@ void PhysicsSystem::IntegrateVelocity(float dt)
 		transform.SetOrientation(orientation);
 
 		//Dump the angular velocity too
-		float frameAngularDumping = 1.0f - (0.4f * dt);
+		float frameAngularDumping = 1.0f - (object->getAngularDamp() * dt);
 		angVel = angVel * frameAngularDumping;
 		object->SetAngularVelocity(angVel);
 	}
@@ -452,7 +457,10 @@ ones in the next 'game' frame.
 void PhysicsSystem::ClearForces() {
 	gameWorld.OperateOnContents(
 		[](GameObject* o) {
-			o->GetPhysicsObject()->ClearForces();
+			if (o->GetPhysicsObject() != nullptr)
+			{
+				o->GetPhysicsObject()->ClearForces();
+			}
 		}
 	);
 }

@@ -44,5 +44,22 @@ namespace NCL {
 		protected:
 			NetworkPlayer* owner;
 		};
+
+		
+		class Item : public GameObject
+		{
+			typedef std::function<void(NetworkPlayer*, Item*)> OnItemCollisionBegin;
+
+		public:
+			Item(OnItemCollisionBegin someFunc) { func = someFunc; }
+
+			void OnCollisionBegin(GameObject* otherObject) override;
+
+			void setOwner(NetworkPlayer* owner) { this->owner = owner; }
+			NetworkPlayer* getOwner() const { return owner; }
+		protected:
+			NetworkPlayer* owner = nullptr;
+			OnItemCollisionBegin func;
+		};
 	}
 }

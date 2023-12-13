@@ -9,10 +9,23 @@
 using namespace NCL;
 using namespace CSC8503;
 
-NetworkPlayer* NetworkPlayer::createAngryGoose(NetworkedGame* game, int num)
-{
-	return nullptr;
-}
+//NetworkPlayer* NetworkPlayer::createAngryGoose(NetworkedGame* game, int num)
+//{
+//	NetworkPlayer* goose = new NetworkPlayer(game, num);
+//
+//	goose->stateMachine = new StateMachine();
+//
+//	State* patrol = new State(
+//		[&](float dt)->void
+//		{
+//			Vector3 center = Vector3(4, 0, -4);
+//			goose->AIMoveTo(center, dt);
+//		}
+//	);
+//	 
+//	goose->stateMachine->AddState(patrol);
+//	return goose;
+//}
 
 NetworkPlayer::NetworkPlayer(NetworkedGame* game, int num)	{
 	this->game = game;
@@ -20,7 +33,32 @@ NetworkPlayer::NetworkPlayer(NetworkedGame* game, int num)	{
 
 	sprintTimer = SprintCDT;
 	fireTimer = FireCDT;
+	haveTreasure = false;
 	score = 0;
+}
+
+NetworkPlayer::NetworkPlayer(NetworkedGame* game, int num, int AIKind)
+{
+	this->game = game;
+	playerNum = num;
+	sprintTimer = SprintCDT;
+	fireTimer = FireCDT;
+	haveTreasure = false;
+	score = 0;
+	if (AIKind == 1)
+	{
+		stateMachine = new StateMachine();
+
+		State* patrol = new State(
+			[&](float dt)->void
+			{
+				Vector3 center = Vector3(4, 0, -4);
+				this->AIMoveTo(center, dt);
+			}
+		);
+
+		stateMachine->AddState(patrol);
+	}
 }
 
 NetworkPlayer::~NetworkPlayer()	{
@@ -97,16 +135,71 @@ void NetworkPlayer::MovePlayer(bool Up, bool Down, bool Right, bool Left)
 	if (Left)  { MoveDir += Vector3(-1, 0,  0); }
 	MoveDir = MoveDir.Normalised();
 
+	/*Vector3 currentVel = physicsObject->GetLinearVelocity();
+	float currentSpeed = currentVel.Length();
+	float k = 20;
+	Vector3 resistence = currentVel.Normalised() * (currentSpeed * currentSpeed) * (-k);
+	this->physicsObject->AddForce(resistence);*/
+	physicsObject->setLinearDamp(2.0f);
 	float maxSpeed = 10.0f;
-	float f = 600.0f;
+	float f = 2000.0f;
 	if (physicsObject->GetLinearVelocity().Length() > maxSpeed)
 	{
 		f = 0.0f;
 	}
 	Vector3 force = MoveDir * f;
-	
+
+	std::cout << "velocity : " << physicsObject->GetLinearVelocity().Length() << std::endl;
 	this->physicsObject->AddForce(force);
 	Debug::DrawLine(this->transform.GetPosition(), this->transform.GetPosition() + force, Debug::RED, 0.0f);
+}
+
+bool NetworkPlayer::AIMoveTo(Vector3 destination, float dt)
+{
+	Vector3 currentPos = transform.GetPosition();
+	float distance = (destination - currentPos).Length();
+	if (distance < 3.0f)
+	{
+		return true;// have arrived the destination;
+	}
+
+	pathfindingTimer -= dt;
+	if (pathfindingTimer <= 0.0f)
+	{
+		waypoints.clear();
+		if (game->findPathToDestination(currentPos, destination, waypoints) == false)
+		{
+			return true;
+		}
+		waypoint = waypoints.begin() + 1;
+		pathfindingTimer = 1.0f;
+	}
+	if (waypoint == waypoints.end()) 
+	{ 
+		pathfindingTimer = 0.0f;
+		return true; 
+	}
+	if (AIMove(*waypoint)) { ++waypoint; }
+
+	return false;
+}
+
+bool NetworkPlayer::AIMove(Vector3 destination)
+{
+	Vector3 MoveDir = destination - transform.GetPosition();
+	if (MoveDir.Length() < 0.5f)
+	{
+		return true;// have arrived the destination;
+	}
+	MoveDir.Normalise();
+	bool move[4] = { 0,0,0,0 };
+	if (MoveDir.z < 0) { move[Up] = 1; }
+	if (MoveDir.z > 0) { move[Down] = 1; }
+	if (MoveDir.x > 0) { move[Right] = 1; }
+	if (MoveDir.x < 0) { move[Left] = 1; }
+	MovePlayer(move[Up], move[Down], move[Right], move[Left]);
+
+	return false; //have not arrived the destination
 }
 
 void NetworkPlayer::PlayerSprint()
@@ -114,7 +207,7 @@ void NetworkPlayer::PlayerSprint()
 	if (sprintTimer <= 0.0f)
 	{
 		Vector3 sprintDir = getPlayerForwardVector();
-		float f = 150000.0f;
+		float f = 500000.0f;
 		Vector3 force = sprintDir * f;
 		this->physicsObject->AddForce(force);
 		Debug::DrawLine(transform.GetPosition(), transform.GetPosition() + force, Debug::GREEN, 3.0f);

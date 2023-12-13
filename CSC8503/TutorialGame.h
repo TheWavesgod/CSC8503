@@ -38,6 +38,8 @@ namespace NCL {
 
 			virtual void UpdateGame(float dt);
 
+			bool findPathToDestination(Vector3 startrPos, Vector3 Destination, vector<Vector3>& pathNodes);
+
 		protected:
 			void InitialiseAssets();
 
@@ -64,8 +66,6 @@ namespace NCL {
 			void MoveSelectedObject();
 			void DebugObjectMovement();
 			void LockedObjectMovement();
-
-			bool findPathToDestination(Vector3 startrPos, Vector3 Destination, vector<Vector3>& pathNodes);
 
 			void BridgeConstraintTest();
 
