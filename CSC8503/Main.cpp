@@ -467,7 +467,7 @@ int tutorial_test() {
 int Coursework()
 {
 	//TestNetWorking();
-	Window* w = Window::CreateGameWindow("Game!", 1920, 1080, false);
+	Window* w = Window::CreateGameWindow("Crazy Goat!", 1920, 1080, false);
 
 	if (!w->HasInitialised()) {
 		return -1;

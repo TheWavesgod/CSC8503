@@ -315,10 +315,17 @@ namespace NCL {
 		{
 			PushdownResult OnUpdate(float dt, PushdownState** newState) override
 			{
-				Debug::Print("Press 1 : Solo Game", Vector2(5, 10), Debug::YELLOW);
-				Debug::Print("Press 2 : MultiPlayer Game", Vector2(5, 20), Debug::YELLOW);
-				Debug::Print("Press 3 : Option", Vector2(5, 30), Debug::YELLOW);
-				Debug::Print("Press Esc : Game Over", Vector2(5, 70), Debug::YELLOW);
+				blinkT -= dt;
+				if (blinkT < 0.0f) {
+					displayTitle = !displayTitle;
+					blinkT = 0.8f;
+				}
+				if(displayTitle){ Debug::Print("The Crazy Goat!!", Vector2(35, 13), Debug::YELLOW); }
+				Debug::Print("Press 1 : Solo Game", Vector2(5, 23), Debug::YELLOW);
+				Debug::Print("Press 2 : MultiPlayer Game", Vector2(5, 33), Debug::YELLOW);
+				Debug::Print("Press 3 : Control Hint", Vector2(5, 43), Debug::YELLOW);
+				Debug::Print("Press 4 : Option", Vector2(5, 53), Debug::YELLOW);
+				Debug::Print("Press Esc : Game Over", Vector2(5, 80), Debug::YELLOW);
 
 				if (Window::GetKeyboard()->KeyPressed(KeyCodes::NUM1))
 				{
@@ -333,12 +340,20 @@ namespace NCL {
 				{
 
 				}
+				if (Window::GetKeyboard()->KeyPressed(KeyCodes::NUM4))
+				{
+
+				}
 				if (Window::GetKeyboard()->KeyPressed(KeyCodes::ESCAPE))
 				{
 					return PushdownResult::Pop;
 				}
 				return PushdownResult::NoChange;
 			}
+
+		protected:
+			float blinkT = 0.8;
+			bool displayTitle = true;
 		};
 	}
 }
