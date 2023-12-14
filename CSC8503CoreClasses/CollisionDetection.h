@@ -86,6 +86,7 @@ namespace NCL {
 		static bool RayPlaneIntersection(const Ray&r, const Plane&p, RayCollision& collisions);
 
 		static bool	AABBTest(const Vector3& posA, const Vector3& posB, const Vector3& halfSizeA, const Vector3& halfSizeB);
+		static bool AABBOBBTest(const Vector3& Axis, const Vector3& halfSizeA, const Vector3& halfSizeB, const Matrix3& absRotMatrix, const Vector3& relativePos, float& penetration, Vector3& collisionNor);
 
 
 		static bool ObjectIntersection(GameObject* a, GameObject* b, CollisionInfo& collisionInfo);
@@ -100,6 +101,9 @@ namespace NCL {
 		static bool AABBSphereIntersection(	const AABBVolume& volumeA	 , const Transform& worldTransformA,
 										const SphereVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo);
 
+		static bool AABBOBBIntersection(const AABBVolume& volumeA, const Transform& worldTransformA,
+										const OBBVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo);
+
 		static bool OBBIntersection(	const OBBVolume& volumeA, const Transform& worldTransformA,
 										const OBBVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo);
 
@@ -113,6 +117,8 @@ namespace NCL {
 		static Vector3		UnprojectScreenPosition(Vector3 position, float aspect, float fov, const PerspectiveCamera&c);
 		static Matrix4		GenerateInverseProjection(float aspect, float fov, float nearPlane, float farPlane);
 		static Matrix4		GenerateInverseView(const Camera &c);
+
+		static Vector3 getAxis(const Transform& worldTransformA, int i);
 
 	protected:
 

@@ -243,14 +243,14 @@ bool TutorialGame::findPathToDestination(Vector3 startrPos, Vector3 Destination,
 
 void TutorialGame::BridgeConstraintTest()
 {
-	Vector3 cubeSize = Vector3(2, 2, 2);
+	Vector3 cubeSize = Vector3(1, 1, 1);
 
 	float invCubeMass = 5; //how heavy the middle pieces are
 	int numLinks = 10;
-	float maxDistance = 30; //constraint distance
-	float cubeDistance = 20; //distance between links
+	float maxDistance = 10; //constraint distance
+	float cubeDistance = 8; //distance between links
 
-	Vector3 startPos = Vector3(-20, 200, -20);
+	Vector3 startPos = Vector3(-20, 20, -160);
 	Debug::DrawLine(startPos, startPos + Vector3(0, 200, 0), Debug::BLUE, 200.0f);
 
 	GameObject* start = AddCubeToWorld(startPos + Vector3(0, 0, 0), cubeSize, 0);
@@ -411,6 +411,28 @@ GameObject* TutorialGame::AddCubeToWorld(const Vector3& position, Vector3 dimens
 	GameObject* cube = new GameObject();
 
 	AABBVolume* volume = new AABBVolume(dimensions);
+	cube->SetBoundingVolume((CollisionVolume*)volume);
+
+	cube->GetTransform()
+		.SetPosition(position)
+		.SetScale(dimensions * 2);
+
+	cube->SetRenderObject(new RenderObject(&cube->GetTransform(), cubeMesh, basicTex, basicShader));
+	cube->SetPhysicsObject(new PhysicsObject(&cube->GetTransform(), cube->GetBoundingVolume()));
+
+	cube->GetPhysicsObject()->SetInverseMass(inverseMass);
+	cube->GetPhysicsObject()->InitCubeInertia();
+
+	world->AddGameObject(cube);
+
+	return cube;
+}
+
+GameObject* TutorialGame::AddOBBCubeToWorld(const Vector3& position, Vector3 dimensions, float inverseMass)
+{
+	GameObject* cube = new GameObject();
+
+	OBBVolume* volume = new OBBVolume(dimensions);
 	cube->SetBoundingVolume((CollisionVolume*)volume);
 
 	cube->GetTransform()

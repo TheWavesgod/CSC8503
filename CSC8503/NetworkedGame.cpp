@@ -883,6 +883,9 @@ void NetworkedGame::StartLevel() {
 	//AddWallToWorld(Vector3(-188, 4, -188), Vector3(4, 4, 4));
 	physics->UseGravity(true);
 
+	GameObject* obb = AddOBBCubeToWorld(Vector3(-160, 10, -160), Vector3(1, 1, 1));
+	obb->GetTransform().SetOrientation(Quaternion::EulerAnglesToQuaternion(30, 0, 0));
+
 	scoreTable.clear();
 	for (int i = 0; i < 4; ++i) { scoreTable.push_back(0); }
 	//Change Round State

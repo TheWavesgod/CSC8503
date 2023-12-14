@@ -235,7 +235,7 @@ void NetworkPlayer::MovePlayer(bool Up, bool Down, bool Right, bool Left)
 
 	//std::cout << "velocity : " << physicsObject->GetLinearVelocity().Length() << std::endl;
 	this->physicsObject->AddForce(force);
-	Debug::DrawLine(this->transform.GetPosition(), this->transform.GetPosition() + force, Debug::RED, 0.0f);
+	//Debug::DrawLine(this->transform.GetPosition(), this->transform.GetPosition() + force, Debug::RED, 0.0f);
 }
 
 bool NetworkPlayer::AIMoveTo(Vector3 destination, float dt)
@@ -292,7 +292,7 @@ NetworkPlayer* NetworkPlayer::AIvision()
 	Vector3 currentPos = transform.GetPosition();
 	Ray sightLine(currentPos, this->getPlayerForwardVector());
 
-	Debug::DrawLine(currentPos, currentPos + getPlayerForwardVector() * 50, Debug::CYAN);
+	//Debug::DrawLine(currentPos, currentPos + getPlayerForwardVector() * 50, Debug::CYAN);
 
 	RayCollision closestCollision;
 	GameWorld* world = game->getGameWorld();
@@ -366,7 +366,7 @@ void NetworkPlayer::PlayerSprint()
 		float f = 500000.0f;
 		Vector3 force = sprintDir * f;
 		this->physicsObject->AddForce(force);
-		Debug::DrawLine(transform.GetPosition(), transform.GetPosition() + force, Debug::GREEN, 3.0f);
+		//Debug::DrawLine(transform.GetPosition(), transform.GetPosition() + force, Debug::GREEN, 3.0f);
 		sprintTimer = SprintCDT;
 	}
 }

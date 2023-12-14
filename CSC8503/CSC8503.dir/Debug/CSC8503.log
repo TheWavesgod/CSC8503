@@ -1,36 +1,4 @@
-﻿  Bullet.cpp
-D:\CppProject\CSC8503 2023\CSC8503CoreClasses\PhysicsObject.h(82,10): warning C4305: “初始化”: 从“double”到“float”截断
-D:\CppProject\CSC8503 2023\CSC8503CoreClasses\PhysicsObject.h(83,10): warning C4305: “初始化”: 从“double”到“float”截断
-D:\CppProject\CSC8503 2023\CSC8503\bullet.h(13,51): warning C4305: “初始化”: 从“double”到“const float”截断
-D:\CppProject\CSC8503 2023\CSC8503\NetworkedGame.h(156,57): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
-D:\CppProject\CSC8503 2023\CSC8503\NetworkedGame.h(251,45): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
-  NetworkPlayer.cpp
-D:\CppProject\CSC8503 2023\CSC8503\NetworkedGame.h(156,57): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
-D:\CppProject\CSC8503 2023\CSC8503\NetworkedGame.h(251,45): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
-D:\CppProject\CSC8503 2023\CSC8503CoreClasses\PhysicsObject.h(82,10): warning C4305: “初始化”: 从“double”到“float”截断
-D:\CppProject\CSC8503 2023\CSC8503CoreClasses\PhysicsObject.h(83,10): warning C4305: “初始化”: 从“double”到“float”截断
-C:\Program Files\Microsoft Visual Studio\2022\Professional\VC\Tools\MSVC\14.34.31933\include\utility(172,54): warning C4244: “初始化”: 从“_Ty”转换到“_Ty2”，可能丢失数据
-          with
-          [
-              _Ty=double
-          ]
-          and
-          [
-              _Ty2=float
-          ]
-D:\CppProject\CSC8503 2023\CSC8503\NetworkPlayer.cpp(348,75): message : 查看对正在编译的函数 模板 实例化“std::pair<NCL::CSC8503::NetworkPlayer *,float>::pair<NCL::CSC8503::NetworkPlayer*&,double,0>(_Other1,_Other2 &&) noexcept”的引用
-          with
-          [
-              _Other1=NCL::CSC8503::NetworkPlayer *&,
-              _Other2=double
-          ]
-D:\CppProject\CSC8503 2023\CSC8503\NetworkPlayer.cpp(348,22): message : 查看对正在编译的函数 模板 实例化“std::pair<NCL::CSC8503::NetworkPlayer *,float>::pair<NCL::CSC8503::NetworkPlayer*&,double,0>(_Other1,_Other2 &&) noexcept”的引用
-          with
-          [
-              _Other1=NCL::CSC8503::NetworkPlayer *&,
-              _Other2=double
-          ]
-  NetworkedGame.cpp
+﻿  NetworkedGame.cpp
 D:\CppProject\CSC8503 2023\CSC8503\NetworkedGame.h(156,57): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
 D:\CppProject\CSC8503 2023\CSC8503\NetworkedGame.h(251,45): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
 D:\CppProject\CSC8503 2023\CSC8503CoreClasses\NetworkObject.h(9,20): warning C4099: “NCL::CSC8503::FullPacket”: 类型名称以前使用“class”现在使用的是“struct”
@@ -54,6 +22,5 @@ D:\CppProject\CSC8503 2023\CSC8503\NetworkedGame.cpp(641,46): warning C4305: “
 D:\CppProject\CSC8503 2023\CSC8503\NetworkedGame.cpp(658,67): warning C4305: “参数”: 从“double”到“float”截断
 D:\CppProject\CSC8503 2023\CSC8503\NetworkedGame.cpp(679,76): warning C4305: “参数”: 从“double”到“float”截断
 D:\CppProject\CSC8503 2023\CSC8503\NetworkedGame.cpp(760,62): warning C4305: “参数”: 从“double”到“float”截断
-  正在生成代码...
 D:\CppProject\CSC8503 2023\CSC8503\NetworkedGame.h(143): warning C4715: “NCL::CSC8503::InGame::OnUpdate”: 不是所有的控件路径都返回值
   CSC8503.vcxproj -> D:\CppProject\CSC8503 2023\x64\Debug\CSC8503.exe
