@@ -24,5 +24,39 @@ D:\CppProject\CSC8503 2023\CSC8503\NetworkedGame.cpp(665,46): warning C4305: “
 D:\CppProject\CSC8503 2023\CSC8503\NetworkedGame.cpp(682,67): warning C4305: “参数”: 从“double”到“float”截断
 D:\CppProject\CSC8503 2023\CSC8503\NetworkedGame.cpp(703,76): warning C4305: “参数”: 从“double”到“float”截断
 D:\CppProject\CSC8503 2023\CSC8503\NetworkedGame.cpp(784,62): warning C4305: “参数”: 从“double”到“float”截断
+  TutorialGame.cpp
+D:\CppProject\CSC8503 2023\CSC8503CoreClasses\PhysicsObject.h(82,10): warning C4305: “初始化”: 从“double”到“float”截断
+D:\CppProject\CSC8503 2023\CSC8503CoreClasses\PhysicsObject.h(83,10): warning C4305: “初始化”: 从“double”到“float”截断
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(726,81): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(726,63): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(726,50): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(727,43): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(727,38): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(727,31): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(736,87): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(736,69): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(736,56): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(737,41): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(737,36): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(737,29): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(756,76): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(756,57): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(756,50): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(757,41): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(757,32): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(757,27): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(766,82): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(766,55): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(766,48): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(767,39): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(767,30): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(767,25): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(791,74): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(791,56): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(791,49): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(792,36): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(792,31): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+D:\CppProject\CSC8503 2023\CSC8503\TutorialGame.cpp(792,26): warning C4244: “参数”: 从“int”转换到“float”，可能丢失数据
+  正在生成代码...
 D:\CppProject\CSC8503 2023\CSC8503\NetworkedGame.h(144): warning C4715: “NCL::CSC8503::InGame::OnUpdate”: 不是所有的控件路径都返回值
   CSC8503.vcxproj -> D:\CppProject\CSC8503 2023\x64\Debug\CSC8503.exe

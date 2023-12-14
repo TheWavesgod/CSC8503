@@ -788,7 +788,7 @@ Map::Map(const std::string& filename, Vector2 halfMapSize, int wHeight)
 					if (nodes[y * gridWidth + x + 1] == 'x') { continue; }
 				}
 				Wall w; 
-				w.pos = TopLeftPoint + Vector3(y * nodeSize + hns, hwh, gridHeight * nodeSize + hns);
+				w.pos = TopLeftPoint + Vector3(x * nodeSize + hns, hwh, y * nodeSize + hns);
 				w.halfsize = Vector3(hns, hwh, hns);
 				wallList.push_back(w);
 			}
