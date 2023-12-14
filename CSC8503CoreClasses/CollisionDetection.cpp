@@ -250,19 +250,19 @@ bool CollisionDetection::AABBTest(const Vector3& posA, const Vector3& posB, cons
 	return false;
 }
 
-bool CollisionDetection::AABBOBBTest(const Vector3& Axis, const Vector3& halfSizeA, const Vector3& halfSizeB, const Matrix3& absRotMatrix, const Vector3& relativePos, float& penetration, Vector3& collisionNor)
+bool CollisionDetection::OBBTest(const Vector3& Axis, const Vector3& halfSizeA, const Vector3& halfSizeB, const Matrix3& absRotMatrixA,const Matrix3& absRotMatrixB, const Vector3& relativePos, float& penetration, Vector3& collisionNor)
 {
 	if (Axis.Length() < 1e-8f)
 	{
 		return true;
 	}
-	float aabbProjection = halfSizeA.x * std::abs(Vector3::Dot(Axis, Vector3(1, 0, 0))) 
-		+ halfSizeA.y * std::abs(Vector3::Dot(Axis, Vector3(0, 1, 0))) 
-		+ halfSizeA.z * std::abs(Vector3::Dot(Axis, Vector3(0, 0, 1)));
+	float aabbProjection = halfSizeA.x * std::abs(Vector3::Dot(Axis, absRotMatrixA.GetColumn(0)))
+		+ halfSizeA.y * std::abs(Vector3::Dot(Axis, absRotMatrixA.GetColumn(1)))
+		+ halfSizeA.z * std::abs(Vector3::Dot(Axis, absRotMatrixA.GetColumn(2)));
 
-	float obbProjection = halfSizeB.x * std::abs(Vector3::Dot(Axis, absRotMatrix.GetColumn(0))) 
-		+ halfSizeB.y * std::abs(Vector3::Dot(Axis, absRotMatrix.GetColumn(1))) 
-		+ halfSizeB.z * std::abs(Vector3::Dot(Axis, absRotMatrix.GetColumn(2)));
+	float obbProjection = halfSizeB.x * std::abs(Vector3::Dot(Axis, absRotMatrixB.GetColumn(0)))
+		+ halfSizeB.y * std::abs(Vector3::Dot(Axis, absRotMatrixB.GetColumn(1)))
+		+ halfSizeB.z * std::abs(Vector3::Dot(Axis, absRotMatrixB.GetColumn(2)));
 
 	float distance = std::abs(Vector3::Dot(Axis, relativePos));
 
@@ -390,6 +390,7 @@ bool CollisionDetection::AABBOBBIntersection(const AABBVolume& volumeA, const Tr
 	Matrix3 rotMatrixB = Matrix3(rotationB); 
 	Matrix3 absRotMatrixB = rotMatrixB.Absolute();
 
+	Matrix3 rotMatrixA = Matrix3(worldTransformA.GetOrientation());
 	//Debug::DrawLine(worldTransformA.GetPosition(), worldTransformA.GetPosition() + Vector3(0, 50, 0), Debug::RED);
 
 	Vector3 sizeA = volumeA.GetHalfDimensions();
@@ -403,7 +404,7 @@ bool CollisionDetection::AABBOBBIntersection(const AABBVolume& volumeA, const Tr
 	for (int i = 0; i < 3; ++i)
 	{
 		Vector3 axis = getAxis(worldTransformA, i);
-		if (!AABBOBBTest(axis, sizeA, sizeB, rotMatrixB, reelativePos, penetration, collisionNor))
+		if (!OBBTest(axis, sizeA, sizeB, rotMatrixA, rotMatrixB,reelativePos, penetration, collisionNor))
 		{
 			return false;
 		}
@@ -412,7 +413,7 @@ bool CollisionDetection::AABBOBBIntersection(const AABBVolume& volumeA, const Tr
 	for (int i = 0; i < 3; ++i)
 	{
 		Vector3 axis = getAxis(worldTransformB, i);
-		if (!AABBOBBTest(axis, sizeA, sizeB, rotMatrixB, reelativePos, penetration, collisionNor))
+		if (!OBBTest(axis, sizeA, sizeB, rotMatrixA, rotMatrixB, reelativePos, penetration, collisionNor))
 		{
 			return false;
 		}
@@ -424,7 +425,7 @@ bool CollisionDetection::AABBOBBIntersection(const AABBVolume& volumeA, const Tr
 		{
 			Vector3 axis = Vector3::Cross(getAxis(worldTransformA, i), getAxis(worldTransformB, j));
 			axis.Normalise();
-			if (!AABBOBBTest(axis, sizeA, sizeB, rotMatrixB, reelativePos, penetration, collisionNor))
+			if (!OBBTest(axis, sizeA, sizeB, rotMatrixA, rotMatrixB, reelativePos, penetration, collisionNor))
 			{
 				return false;
 			}
@@ -438,7 +439,7 @@ bool CollisionDetection::AABBOBBIntersection(const AABBVolume& volumeA, const Tr
 	Vector3 localA = Vector3();
 	Vector3 localB = -collisionNor * (std::abs(Vector3::Dot(collisionNor, sizeB)) - penetration);
 
-	Debug::DrawLine(worldTransformB.GetPosition() + localB, worldTransformB.GetPosition() + localB + collisionNor * 20, Debug::RED);
+	//Debug::DrawLine(worldTransformB.GetPosition() + localB, worldTransformB.GetPosition() + localB + collisionNor * 20, Debug::RED);
 
 	collisionInfo.AddContactPoint(localA, localB, collisionNor, penetration);
 	return true;
@@ -490,59 +491,32 @@ bool CollisionDetection::SphereCapsuleIntersection(
 bool CollisionDetection::OBBIntersection(const OBBVolume& volumeA, const Transform& worldTransformA,
 	const OBBVolume& volumeB, const Transform& worldTransformB, CollisionInfo& collisionInfo) 
 {
-	Quaternion orientationA = worldTransformA.GetOrientation();
-	Quaternion orientationB = worldTransformB.GetOrientation();
+	Vector3 sizeA = volumeA.GetHalfDimensions();
+	Vector3 sizeB = volumeB.GetHalfDimensions();
 
-	Matrix3 transformA = Matrix3(orientationA);
-	Matrix3 invTransformA = Matrix3(orientationA.Conjugate());
-	Matrix3 transformB = Matrix3(orientationB);
+	Vector3 relativePos = worldTransformB.GetPosition() - worldTransformA.GetPosition();
 
-	Matrix3 boxBLocalRot = invTransformA * transformB;
-	Matrix3 AbsboxBLclRot;
+	Matrix3 rotMatrixA = Matrix3(worldTransformA.GetOrientation());
+	Matrix3 rotMatrixB = Matrix3(worldTransformB.GetOrientation());
 
-	Vector3 boxAPos = worldTransformA.GetPosition();
-	Vector3 boxBPos = worldTransformB.GetPosition();
-
-	for (int i = 0; i < 3; ++i)
-	{
-		for (int j = 0; j < 3; ++j)
-		{
-			AbsboxBLclRot.array[i][j] = std::abs(boxBLocalRot.array[i][j]) + std::numeric_limits<float>::epsilon();
-		}
-	}
-
-	Vector3 boxBLocalPos = worldTransformB.GetPosition() - worldTransformA.GetPosition();
-	boxBLocalPos = invTransformA * boxBLocalPos;
-
-	Vector3 boxASize = volumeA.GetHalfDimensions();
-	Vector3 boxBSize = volumeB.GetHalfDimensions();
-
-	float ra, rb;
 	float penetration = FLT_MAX;
-	Vector3 bestAxis;
+	Vector3 collisionNor;
 
-	// Use the Axis of A as SAT
 	for (int i = 0; i < 3; ++i)
 	{
-		ra = boxASize[i];
-		rb = Vector3::Dot(boxBSize, AbsboxBLclRot.GetRow(i));
-		float t = ra + rb - std::abs(boxBLocalPos[i]);
-		if (t < 0) return false;
-		if (t < penetration)
+		Vector3 axis = getAxis(worldTransformA, i);
+		if (!OBBTest(axis, sizeA, sizeB, rotMatrixA, rotMatrixB, relativePos, penetration, collisionNor))
 		{
-			penetration = t;
-			bestAxis = transformA.GetRow(i);
+			return false;
 		}
+	}
 
-
-		ra = Vector3::Dot(boxASize, AbsboxBLclRot.GetColumn(i));
-		rb = boxBSize[i];
-		t = ra + rb - std::abs(Vector3::Dot(boxBLocalPos, boxBLocalRot.GetColumn(i)));
-		if (t < 0) return false;
-		if (t < penetration)
+	for (int i = 0; i < 3; ++i)
+	{
+		Vector3 axis = getAxis(worldTransformB, i);
+		if (!OBBTest(axis, sizeA, sizeB, rotMatrixA,rotMatrixB, relativePos, penetration, collisionNor))
 		{
-			penetration = t;
-			bestAxis = transformB.GetRow(i);
+			return false;
 		}
 	}
 
@@ -550,28 +524,104 @@ bool CollisionDetection::OBBIntersection(const OBBVolume& volumeA, const Transfo
 	{
 		for (int j = 0; j < 3; ++j)
 		{
-			Vector3 Axis = Vector3::Cross(transformA.GetRow(i), transformB.GetRow(j));
-			ra = boxASize[(i + 1) % 3] * AbsboxBLclRot.array[(i + 2) % 3][j] + boxASize[(i + 2) % 3] * AbsboxBLclRot.array[(i + 1) % 3][j];
-			rb = boxBSize[(j + 1) % 3] * AbsboxBLclRot.array[i][(j + 2) % 3] + boxBSize[(j + 2) % 3] * AbsboxBLclRot.array[i][(j + 2) % 3];
-			float t = ra + rb - std::abs(Vector3::Dot(boxBLocalPos, Axis));
-			if (t < 0) return false;
-			if (t < penetration)
+			Vector3 axis = Vector3::Cross(getAxis(worldTransformA, i), getAxis(worldTransformB, j));
+			axis.Normalise();
+			if (!OBBTest(axis, sizeA, sizeB, rotMatrixA, rotMatrixB, relativePos, penetration, collisionNor))
 			{
-				penetration = t;
-				bestAxis = Axis;		
+				return false;
 			}
 		}
 	}
 
-	Vector3 Normal = bestAxis.Normalised();
-	Vector3 localA = boxAPos - Normal * (Vector3::Dot(Normal, boxAPos) - penetration);
-	localA = transformA * localA;
-	Vector3 localB = boxBPos - Normal * (Vector3::Dot(Normal, boxBPos) - penetration);
-	localB = transformB * localB;
+	if (Vector3::Dot(collisionNor, relativePos) < 0)
+	{
+		collisionNor = -collisionNor;
+	}
+	Vector3 localA = collisionNor * (std::abs(Vector3::Dot(collisionNor, sizeA)) - penetration);;
+	Vector3 localB = -collisionNor * (std::abs(Vector3::Dot(collisionNor, sizeB)) - penetration);
 
-	collisionInfo.AddContactPoint(localA, localB, Normal, penetration);
+	//Debug::DrawLine(worldTransformB.GetPosition() + localB, worldTransformB.GetPosition() + localB + collisionNor * 20, Debug::RED);
 
+	collisionInfo.AddContactPoint(localA, localB, collisionNor, penetration);
 	return true;
+
+	//Matrix3 transformA = Matrix3(orientationA);
+	//Matrix3 invTransformA = Matrix3(orientationA.Conjugate());
+	//Matrix3 transformB = Matrix3(orientationB);
+
+	//Matrix3 boxBLocalRot = invTransformA * transformB;
+	//Matrix3 AbsboxBLclRot;
+
+	//Vector3 boxAPos = worldTransformA.GetPosition();
+	//Vector3 boxBPos = worldTransformB.GetPosition();
+
+	//for (int i = 0; i < 3; ++i)
+	//{
+	//	for (int j = 0; j < 3; ++j)
+	//	{
+	//		AbsboxBLclRot.array[i][j] = std::abs(boxBLocalRot.array[i][j]) + std::numeric_limits<float>::epsilon();
+	//	}
+	//}
+
+	//Vector3 boxBLocalPos = worldTransformB.GetPosition() - worldTransformA.GetPosition();
+	//boxBLocalPos = invTransformA * boxBLocalPos;
+
+	//Vector3 boxASize = volumeA.GetHalfDimensions();
+	//Vector3 boxBSize = volumeB.GetHalfDimensions();
+
+	//float ra, rb;
+	//float penetration = FLT_MAX;
+	//Vector3 bestAxis;
+
+	//// Use the Axis of A as SAT
+	//for (int i = 0; i < 3; ++i)
+	//{
+	//	ra = boxASize[i];
+	//	rb = Vector3::Dot(boxBSize, AbsboxBLclRot.GetRow(i));
+	//	float t = ra + rb - std::abs(boxBLocalPos[i]);
+	//	if (t < 0) return false;
+	//	if (t < penetration)
+	//	{
+	//		penetration = t;
+	//		bestAxis = transformA.GetRow(i);
+	//	}
+
+
+	//	ra = Vector3::Dot(boxASize, AbsboxBLclRot.GetColumn(i));
+	//	rb = boxBSize[i];
+	//	t = ra + rb - std::abs(Vector3::Dot(boxBLocalPos, boxBLocalRot.GetColumn(i)));
+	//	if (t < 0) return false;
+	//	if (t < penetration)
+	//	{
+	//		penetration = t;
+	//		bestAxis = transformB.GetRow(i);
+	//	}
+	//}
+
+	//for (int i = 0; i < 3; ++i)
+	//{
+	//	for (int j = 0; j < 3; ++j)
+	//	{
+	//		Vector3 Axis = Vector3::Cross(transformA.GetRow(i), transformB.GetRow(j));
+	//		ra = boxASize[(i + 1) % 3] * AbsboxBLclRot.array[(i + 2) % 3][j] + boxASize[(i + 2) % 3] * AbsboxBLclRot.array[(i + 1) % 3][j];
+	//		rb = boxBSize[(j + 1) % 3] * AbsboxBLclRot.array[i][(j + 2) % 3] + boxBSize[(j + 2) % 3] * AbsboxBLclRot.array[i][(j + 2) % 3];
+	//		float t = ra + rb - std::abs(Vector3::Dot(boxBLocalPos, Axis));
+	//		if (t < 0) return false;
+	//		if (t < penetration)
+	//		{
+	//			penetration = t;
+	//			bestAxis = Axis;		
+	//		}
+	//	}
+	//}
+
+	//Vector3 Normal = bestAxis.Normalised();
+	//Vector3 localA = boxAPos - Normal * (Vector3::Dot(Normal, boxAPos) - penetration);
+	//localA = transformA * localA;
+	//Vector3 localB = boxBPos - Normal * (Vector3::Dot(Normal, boxBPos) - penetration);
+	//localB = transformB * localB;
+
+	//collisionInfo.AddContactPoint(localA, localB, Normal, penetration);
 }
 
 Matrix4 GenerateInverseView(const Camera &c) {

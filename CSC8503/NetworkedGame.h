@@ -100,6 +100,7 @@ namespace NCL {
 			void findOSpointerWorldPosition(Vector3& position);
 
 			GameObject* AddNetPlayerToWorld(const Vector3& position, int playerNum);
+			void AddNetOBBCube();
 
 			std::map<int, int> stateIDs;  
 			int GlobalStateID;
@@ -311,16 +312,34 @@ namespace NCL {
 			}
 		};
 
+		class HintMenu : public PushdownState
+		{
+			PushdownResult OnUpdate(float dt, PushdownState** newState) override
+			{
+				Debug::Print("Mouse Move for Rotate Player", Vector2(5, 10), Debug::YELLOW);
+				Debug::Print("Mouse Left Btn for Player Fire", Vector2(5, 17), Debug::YELLOW);
+				Debug::Print("W for Move Up", Vector2(5, 24), Debug::YELLOW);
+				Debug::Print("S for Move Down", Vector2(5, 31), Debug::YELLOW);
+				Debug::Print("A for Move Left", Vector2(5, 38), Debug::YELLOW);
+				Debug::Print("D for Move Right", Vector2(5, 45), Debug::YELLOW);
+				Debug::Print("Shift for Sprint Forward", Vector2(5, 52), Debug::YELLOW);
+
+
+				Debug::Print("Press Esc : Back to Main menu ", Vector2(5, 80), Debug::YELLOW);
+				if (Window::GetKeyboard()->KeyPressed(KeyCodes::ESCAPE))
+				{
+					return PushdownResult::Pop;
+				}
+				return PushdownResult::NoChange;
+			}
+
+		};
+
 		class MainMenu : public PushdownState
 		{
 			PushdownResult OnUpdate(float dt, PushdownState** newState) override
 			{
-				blinkT -= dt;
-				if (blinkT < 0.0f) {
-					displayTitle = !displayTitle;
-					blinkT = 0.8f;
-				}
-				if(displayTitle){ Debug::Print("The Crazy Goat!!", Vector2(35, 13), Debug::YELLOW); }
+				Debug::Print("The Crazy Goat!!", Vector2(35, 13), GetColorChanged(dt)); 
 				Debug::Print("Press 1 : Solo Game", Vector2(5, 23), Debug::YELLOW);
 				Debug::Print("Press 2 : MultiPlayer Game", Vector2(5, 33), Debug::YELLOW);
 				Debug::Print("Press 3 : Control Hint", Vector2(5, 43), Debug::YELLOW);
@@ -338,7 +357,8 @@ namespace NCL {
 				}
 				if (Window::GetKeyboard()->KeyPressed(KeyCodes::NUM3))
 				{
-
+					*newState = new HintMenu();
+					return PushdownResult::Push;
 				}
 				if (Window::GetKeyboard()->KeyPressed(KeyCodes::NUM4))
 				{
@@ -352,8 +372,16 @@ namespace NCL {
 			}
 
 		protected:
-			float blinkT = 0.8;
-			bool displayTitle = true;
+			Vector4 GetColorChanged(float dt)
+			{
+				time += dt;
+				float r = (std::sin(time) + 1.0f) / 2.0f;
+				float g = (std::sin(time + 2.094f) + 1.0f) / 2.0f;
+				float b = (std::sin(time + 4.188f) + 1.0f) / 2.0f;
+
+				return Vector4(r, g, b, 1.0);
+			}
+			float time = 0.0f;
 		};
 	}
 }

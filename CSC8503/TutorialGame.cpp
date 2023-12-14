@@ -251,7 +251,7 @@ void TutorialGame::BridgeConstraintTest()
 	float cubeDistance = 8; //distance between links
 
 	Vector3 startPos = Vector3(-20, 20, -160);
-	Debug::DrawLine(startPos, startPos + Vector3(0, 200, 0), Debug::BLUE, 200.0f);
+	//Debug::DrawLine(startPos, startPos + Vector3(0, 200, 0), Debug::BLUE, 200.0f);
 
 	GameObject* start = AddCubeToWorld(startPos + Vector3(0, 0, 0), cubeSize, 0);
 	GameObject* end = AddCubeToWorld(startPos + Vector3((numLinks + 2) * cubeDistance, 0, 0), cubeSize, 0);
@@ -444,6 +444,8 @@ GameObject* TutorialGame::AddOBBCubeToWorld(const Vector3& position, Vector3 dim
 
 	cube->GetPhysicsObject()->SetInverseMass(inverseMass);
 	cube->GetPhysicsObject()->InitCubeInertia();
+
+	cube->GetRenderObject()->SetColour(Vector4(0.5, 0.5, 0, 1));
 
 	world->AddGameObject(cube);
 
@@ -736,6 +738,7 @@ Map::Map(const std::string& filename, Vector2 halfMapSize, int wHeight)
 			wallList.push_back(w);
 		}
 	}
+
 	for (int y = 0; y < gridWidth; ++y)
 	{
 		int num = 0;
@@ -763,6 +766,32 @@ Map::Map(const std::string& filename, Vector2 halfMapSize, int wHeight)
 			w.pos = TopLeftPoint + Vector3(y * nodeSize + hns, hwh, gridHeight * nodeSize - num * hns);
 			w.halfsize = Vector3(hns, hwh, num * hns);
 			wallList.push_back(w);
+		}
+	}
+
+	for (int y = 0; y < gridHeight; ++y)
+	{
+		for (int x = 0; x < gridWidth; ++x)
+		{
+			if (nodes[y * gridWidth + x] == 'x')
+			{
+				if (y - 1 >=0) {
+					if (nodes[(y - 1) * gridWidth + x] == 'x') { continue; }
+				}
+				if (y + 1 < gridHeight) {
+					if (nodes[(y + 1) * gridWidth + x] == 'x') { continue; }
+				}
+				if (x - 1 >= 0) {
+					if (nodes[y * gridWidth + x - 1] == 'x') { continue; }
+				}
+				if (x + 1 < gridWidth) {
+					if (nodes[y * gridWidth + x + 1] == 'x') { continue; }
+				}
+				Wall w; 
+				w.pos = TopLeftPoint + Vector3(y * nodeSize + hns, hwh, gridHeight * nodeSize + hns);
+				w.halfsize = Vector3(hns, hwh, hns);
+				wallList.push_back(w);
+			}
 		}
 	}
 }

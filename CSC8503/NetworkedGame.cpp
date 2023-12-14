@@ -1,3 +1,4 @@
+
 #include "NetworkedGame.h"
 #include "NetworkPlayer.h"
 #include "NetworkObject.h"
@@ -205,6 +206,8 @@ void NetworkedGame::InitWorld()
 
 	InitDefaultFloor();
 	InitMapWall();
+
+	AddNetOBBCube();
 
 	BridgeConstraintTest();
 	//testStateObject = AddStateObjectToWorld(Vector3(0, 10, 0));
@@ -589,6 +592,27 @@ GameObject* NetworkedGame::AddNetPlayerToWorld(const Vector3& position, int play
 	return character;
 }
 
+void NetworkedGame::AddNetOBBCube()
+{
+	Vector3 p = Vector3(-200, 10, -200);
+	int x = 6;
+	int y = 6;
+	for (int i = 0; i < 100; ++i)
+	{
+		do 
+		{
+			x = rand() % 50;
+			y = rand() % 50;
+		} while (x > 9 && x < 40 && y > 9 && y < 40);
+
+		Vector3 pos = p + Vector3(x * 8 + 4, 0, y * 8 + 4);
+		
+		GameObject* obb = AddOBBCubeToWorld(pos, Vector3(1, 1, 1));
+		obb->SetNetworkObject(new NetworkObject(*obb, 500 + i));
+		networkObjects.insert(std::pair<int, NetworkObject*>(500 + i, obb->GetNetworkObject()));
+	}
+}
+
 void NetworkedGame::SpawnPlayer() {
 	serverPlayers.clear();
 	for (int i = 0; i < 4; ++i)
@@ -882,9 +906,6 @@ void NetworkedGame::StartLevel() {
 	InitWorld();
 	//AddWallToWorld(Vector3(-188, 4, -188), Vector3(4, 4, 4));
 	physics->UseGravity(true);
-
-	GameObject* obb = AddOBBCubeToWorld(Vector3(-160, 10, -160), Vector3(1, 1, 1));
-	obb->GetTransform().SetOrientation(Quaternion::EulerAnglesToQuaternion(30, 0, 0));
 
 	scoreTable.clear();
 	for (int i = 0; i < 4; ++i) { scoreTable.push_back(0); }

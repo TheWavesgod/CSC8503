@@ -86,7 +86,7 @@ namespace NCL {
 		static bool RayPlaneIntersection(const Ray&r, const Plane&p, RayCollision& collisions);
 
 		static bool	AABBTest(const Vector3& posA, const Vector3& posB, const Vector3& halfSizeA, const Vector3& halfSizeB);
-		static bool AABBOBBTest(const Vector3& Axis, const Vector3& halfSizeA, const Vector3& halfSizeB, const Matrix3& absRotMatrix, const Vector3& relativePos, float& penetration, Vector3& collisionNor);
+		static bool OBBTest(const Vector3& Axis, const Vector3& halfSizeA, const Vector3& halfSizeB, const Matrix3& absRotMatrixA,const Matrix3& absRotMatrixB, const Vector3& relativePos, float& penetration, Vector3& collisionNor);
 
 
 		static bool ObjectIntersection(GameObject* a, GameObject* b, CollisionInfo& collisionInfo);
